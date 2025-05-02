@@ -1,0 +1,631 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+header h1 {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.wallet-connect {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.sign-button {
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sign-button:hover {
+  background-color: #45a049;
+}
+
+.quadratic-voting {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.ballot {
+  background: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.fighters {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  width: 100%;
+  align-items: center;
+  justify-items: center;
+}
+
+.fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.fighter img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  object-fit: cover;
+}
+
+.fighter h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #ffd700;
+  text-align: center;
+  word-break: break-word;
+  max-width: 150px;
+}
+
+.fighter p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  color: #fff;
+  text-align: center;
+}
+
+.vs {
+  color: #ffd700;
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  margin: 0;
+  padding: 0 0.5rem;
+}
+
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+.vote-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 120px;
+  margin: 0.5rem auto;
+}
+
+.vote-button {
+  width: 100%;
+  height: 35px;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.vote-button.up {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.vote-button.down {
+  background-color: #f44336;
+  color: white;
+}
+
+.vote-count {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #fff;
+}
+
+.total-votes {
+  margin-top: 1rem;
+  color: #ffd700;
+  font-size: 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+button.vote-button {
+  width: 100%;
+  max-width: 200px;
+  margin: 1rem auto 0;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-weight: 600;
+  background-color: #808080;
+  color: white;
+  cursor: pointer;
+  display: block;
+}
+
+button.vote-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.signed-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.master-dashboard {
+  background: #1a1a1a;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.master-dashboard h2 {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.debates-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.debate-control {
+  background: #2a2a2a;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.status-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.status-controls button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #333;
+  color: white;
+}
+
+.status-controls button.active {
+  background: #4CAF50;
+}
+
+.debates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.debate-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 400px;
+}
+
+.debate-card.vote {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.debate-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 215, 0, 0.2) 50%,
+    transparent 100%
+  );
+}
+
+.debate-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 215, 0, 0.2) 50%,
+    transparent 100%
+  );
+}
+
+.wallet-locked {
+  background: #f44336;
+  color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.wallet-locked p {
+  margin: 0.5rem 0;
+}
+
+.wallet-locked p:last-of-type {
+  font-family: monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.reset-button {
+  margin-top: 1rem;
+  background: white;
+  color: #f44336;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.reset-button:hover {
+  background: #f5f5f5;
+}
+
+.credits-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.welcome-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  color: white;
+}
+
+.welcome-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 600px;
+}
+
+.welcome-content h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #4CAF50, #2196F3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #888;
+  margin-bottom: 3rem;
+}
+
+.connect-section, .sign-section {
+  margin-top: 2rem;
+}
+
+.connect-section p, .sign-section p {
+  margin-bottom: 1rem;
+  color: #aaa;
+}
+
+.sign-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.sign-button:hover {
+  background: #45a049;
+}
+
+body {
+  background-color: #00273D;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  position: relative;
+}
+
+/* Rimuovo i pattern sovrapposti */
+body::before {
+  display: none;
+}
+
+body::after {
+  display: none;
+}
+
+.app-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 1;
+}
+
+.arab-frame {
+  position: absolute;
+  top: -2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140%;
+  height: 70%;
+  background-image: url('/assets/ArabFrame.png');
+  background-size: contain;
+  background-position: top center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.15;
+}
+
+.debate-title {
+  color: #ffd700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+  margin: 0.5rem 0 2rem;
+  position: relative;
+  z-index: 2;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .debate-card {
+    max-width: 100%;
+  }
+
+  .fighters {
+    gap: 0.5rem;
+  }
+
+  .fighter img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .fighter h4 {
+    font-size: 0.9rem;
+  }
+
+  .vs {
+    font-size: 1.2rem;
+  }
+
+  .vote-controls {
+    max-width: 100px;
+  }
+
+  .vote-button {
+    height: 30px;
+  }
+}
+
+.app-header {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  width: 100%;
+  color: #ffd700;
+}
+
+.wallet-address {
+  text-align: center;
+  font-family: monospace;
+  opacity: 0.8;
+  min-width: 150px;
+  justify-self: center;
+}
+
+.logo {
+  height: 50px;
+  width: 250px;
+  background-image: url('/assets/BlockFighters.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0 auto;
+}
+
+.credits {
+  text-align: center;
+  min-width: 150px;
+  justify-self: center;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .wallet-address {
+    font-size: 0.8rem;
+  }
+
+  .logo {
+    height: 40px;
+  }
+}
+
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(5px);
+  padding: 0.75rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.sticky-header.visible {
+  transform: translateY(0);
+}
+
+.sticky-header .logo {
+  height: 40px;
+  width: 200px;
+}
+
+.sticky-header .wallet-address,
+.sticky-header .credits {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .sticky-header {
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .sticky-header .logo {
+    height: 30px;
+    width: 150px;
+  }
+
+  .sticky-header .wallet-address,
+  .sticky-header .credits {
+    font-size: 0.8rem;
+  }
+}
+
+.credits-modal .credits-info {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 2rem;
+  color: #ffd700;
+}
+
+.credits-modal .wallet-address,
+.credits-modal .credits {
+  text-align: center;
+  justify-self: center;
+}
