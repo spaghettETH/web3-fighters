@@ -1,8 +1,9 @@
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
+  overflow-x: hidden;
 }
 
 .logo {
@@ -42,9 +43,9 @@
 }
 
 .app {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 header {
@@ -487,33 +488,128 @@ body::after {
 }
 
 @media (max-width: 768px) {
-  .debate-card {
-    max-width: 100%;
+  #root {
+    padding: 0.5rem;
   }
 
+  .app-container {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  .debate-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+  }
+  
   .fighters {
+    grid-template-columns: 1fr 40px 1fr;
     gap: 0.5rem;
   }
-
+  
   .fighter img {
     width: 60px;
     height: 60px;
   }
-
+  
   .fighter h4 {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    max-width: 100px;
   }
-
+  
   .vs {
     font-size: 1.2rem;
   }
-
+  
   .vote-controls {
     max-width: 100px;
   }
-
+  
   .vote-button {
-    height: 30px;
+    height: 32px;
+  }
+  
+  .app-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+  }
+  
+  .wallet-address {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .logo {
+    height: 40px;
+    width: 100%;
+  }
+  
+  .credits {
+    font-size: 0.9rem;
+  }
+  
+  .debate-title {
+    font-size: 1.2rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+  
+  .master-dashboard {
+    width: 100%;
+    padding: 0.5rem;
+  }
+  
+  .debates-list {
+    width: 100%;
+  }
+  
+  .debate-control {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .status-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-controls button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.25rem;
+  }
+  
+  .fighter img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .fighter h4 {
+    font-size: 0.75rem;
+    max-width: 80px;
+  }
+  
+  .vote-count {
+    font-size: 1rem;
+  }
+  
+  .total-votes {
+    font-size: 0.9rem;
+  }
+  
+  .vs {
+    font-size: 1rem;
   }
 }
 
