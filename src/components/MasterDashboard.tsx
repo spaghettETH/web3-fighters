@@ -21,7 +21,7 @@ export const MasterDashboard = ({ debates, onStatusChange, onDeleteMatch }: Mast
         {debates.map(debate => (
           <div key={debate.id} className="debate-control">
             <div className="debate-header">
-              <h3>Dibattito #{debate.id}</h3>
+              <h3>{debate.title || `Dibattito #${debate.id}`}</h3>
               <button 
                 className="delete-button"
                 onClick={() => onDeleteMatch(debate.id)}
