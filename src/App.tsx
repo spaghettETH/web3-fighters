@@ -10,6 +10,7 @@ import {
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { WalletConnect } from './components/WalletConnect';
 import { QuadraticVoting } from './components/QuadraticVoting';
+import Preloader from './components/Preloader';
 import '@rainbow-me/rainbowkit/styles.css';
 import './App.css';
 import { useState } from 'react';
@@ -52,6 +53,8 @@ function App() {
           })}
           modalSize="compact"
         >
+          <Preloader />
+          
           {!hasSigned ? (
             <WelcomeScreen onSignMessage={handleSignMessage} hasSigned={hasSigned} />
           ) : (
