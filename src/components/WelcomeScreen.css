@@ -1,0 +1,130 @@
+.welcome-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  color: white;
+  padding: 1rem;
+  overflow-x: hidden;
+}
+
+.welcome-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 100%;
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.welcome-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #ffd700, #ff9900);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+}
+
+.connect-section, .sign-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.connect-section p, .sign-section p {
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+.connect-button-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.connect-button-wrapper [data-rk] {
+  width: 100%;
+  max-width: 250px;
+}
+
+.connect-button-wrapper [data-rk] button {
+  width: 100%;
+  height: 48px;
+  font-weight: 600;
+}
+
+.sign-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 600;
+  width: 100%;
+  max-width: 250px;
+}
+
+.sign-button:hover {
+  background: #3d8b40;
+}
+
+@media (max-width: 768px) {
+  .welcome-content {
+    padding: 1.5rem;
+  }
+  
+  .welcome-content h1 {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .sign-button {
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-content {
+    padding: 1rem;
+  }
+  
+  .welcome-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .connect-section p, .sign-section p {
+    font-size: 0.9rem;
+  }
+  
+  .sign-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+  }
+} 

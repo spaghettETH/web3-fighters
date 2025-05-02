@@ -50,8 +50,11 @@ function App() {
             accentColor: '#4CAF50',
             accentColorForeground: 'white',
             borderRadius: 'medium',
+            fontStack: 'system',
+            overlayBlur: 'small',
           })}
           modalSize="compact"
+          showRecentTransactions={false}
         >
           <Preloader />
           

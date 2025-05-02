@@ -1,5 +1,6 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount } from 'wagmi';
+import './WelcomeScreen.css';
 
 interface WelcomeScreenProps {
   onSignMessage: () => void;
@@ -8,38 +9,33 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen = ({ onSignMessage, hasSigned }: WelcomeScreenProps) => {
   const { isConnected } = useAccount();
-  const { signMessage } = useSignMessage();
-
-  const handleSignMessage = async () => {
-    try {
-      const message = "Confermo di essere il proprietario di questo wallet";
-      await signMessage({ message });
-      onSignMessage();
-    } catch (error) {
-      console.error('Errore durante la firma:', error);
-      alert('Si è verificato un errore durante la firma del messaggio');
-    }
-  };
 
   return (
     <div className="welcome-screen">
       <div className="welcome-content">
-        <h1>Enter Blockfighters</h1>
-        <p className="subtitle">The ultimate quadratic voting platform for Web3 debates</p>
-        
-        {!isConnected ? (
-          <div className="connect-section">
-            <p>Connect your wallet to begin</p>
-            <ConnectButton showBalance={true} chainStatus="icon" />
+        <h1>BlockFighters Ethcc8</h1>
+        <p className="subtitle">Vota i tuoi fighter preferiti con il voto quadratico!</p>
+
+        <div className="connect-section">
+          <p>Per partecipare, devi prima connettere il tuo wallet:</p>
+          <div className="connect-button-wrapper">
+            <ConnectButton 
+              chainStatus="none" 
+              accountStatus="address"
+              showBalance={false}
+              label="Connetti Wallet"
+            />
           </div>
-        ) : !hasSigned ? (
+        </div>
+
+        {isConnected && !hasSigned && (
           <div className="sign-section">
-            <p>Sign the message to verify your wallet ownership</p>
-            <button onClick={handleSignMessage} className="sign-button">
-              Sign Message
+            <p>Ora firma un messaggio per confermare la tua identità:</p>
+            <button className="sign-button" onClick={onSignMessage}>
+              Firma
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

@@ -46,19 +46,19 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
         ? ipfsHash.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`)
         : ipfsHash;
       
-      if (fighter === 'fighter1') {
+        if (fighter === 'fighter1') {
         setFighter1(prev => ({ 
           ...prev, 
           imageUrl: ipfsHash, // Salviamo l'hash IPFS
           previewUrl: imageUrl // Usiamo l'URL del gateway per la preview
         }));
-      } else {
+        } else {
         setFighter2(prev => ({ 
           ...prev, 
           imageUrl: ipfsHash,
           previewUrl: imageUrl
         }));
-      }
+        }
     } catch (err) {
       console.error('Errore durante l\'upload:', err);
       alert('Errore durante l\'upload dell\'immagine. Riprova.');

@@ -22,6 +22,8 @@ html, body {
   overflow-x: hidden;
   width: 100%;
   position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -39,6 +41,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   width: 100%;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -68,6 +71,9 @@ button:focus-visible {
 #root {
   width: 100%;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
 }
 
 @media (prefers-color-scheme: light) {
@@ -86,4 +92,46 @@ button:focus-visible {
 img {
   max-width: 100%;
   height: auto;
+}
+
+/* Fix per i modali di RainbowKit */
+[data-rk] {
+  --rk-radii-modal: 12px;
+  --rk-radii-connectButton: 8px;
+  --rk-fonts-body: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --rk-modal-width: 98vw !important;
+  --rk-modal-max-width: 420px !important;
+}
+
+@media (max-width: 768px) {
+  [data-rk] {
+    --rk-modal-margin: 8px !important;
+    --rk-modal-width: calc(100vw - 16px) !important;
+    --rk-modal-max-width: 100% !important;
+  }
+  
+  [data-rk] div:has(> [data-rk="connectButton"]) {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  [data-rk="modal"] {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 16px) !important;
+    max-width: 420px !important;
+  }
+  
+  body, html, #root, .app-container {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+}
+
+/* Assicurarsi che tutti i dati di RainbowKit siano visibili */
+[role="dialog"] {
+  max-width: 100vw !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }

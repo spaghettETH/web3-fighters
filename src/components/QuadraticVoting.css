@@ -16,6 +16,8 @@ body {
   max-width: 100%;
   margin: 0 auto;
   overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .credits-modal {
@@ -106,6 +108,8 @@ body {
   gap: 1rem;
   padding: 0.5rem;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .current-match {
@@ -155,6 +159,7 @@ body {
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .debate-card.vote {
@@ -212,6 +217,7 @@ body {
   align-items: center;
   justify-items: center;
   margin: 1rem 0;
+  box-sizing: border-box;
 }
 
 .fighter {
@@ -221,6 +227,7 @@ body {
   gap: 1rem;
   width: 100%;
   max-width: 200px;
+  box-sizing: border-box;
 }
 
 .fighter img {
@@ -275,6 +282,10 @@ body {
   cursor: pointer;
   font-size: 1.2rem;
   transition: all 0.2s ease;
+  min-height: 36px;
+  min-width: 80px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .vote-button:hover {
@@ -408,6 +419,9 @@ button.vote-button:disabled {
     gap: 0.5rem;
     padding: 0.5rem;
     font-size: 0.9rem;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .credits-info .logo {
@@ -418,17 +432,27 @@ button.vote-button:disabled {
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 0;
+    width: 100%;
   }
   
   .debate-card {
     padding: 1rem;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .fighters {
-    grid-template-columns: 1fr 40px 1fr;
-    gap: 0.5rem;
+    grid-template-columns: 1fr 30px 1fr;
+    gap: 0.25rem;
+    margin: 0.5rem 0;
     width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .fighter {
+    gap: 0.25rem;
+    max-width: 100%;
   }
   
   .fighter img {
@@ -446,7 +470,9 @@ button.vote-button:disabled {
   }
   
   .vote-controls {
-    max-width: 100px;
+    max-width: 90px;
+    padding: 0;
+    margin: 0.25rem auto;
   }
   
   .vote-button {
@@ -454,10 +480,10 @@ button.vote-button:disabled {
   }
   
   .debate-title {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    word-break: break-word;
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.25rem;
+    margin: 0.25rem 0 1rem;
   }
   
   .master-dashboard {
@@ -494,6 +520,7 @@ button.vote-button:disabled {
   .credits-info {
     grid-template-columns: 1fr;
     text-align: center;
+    padding: 0.25rem;
   }
   
   .credits-info .logo {
@@ -508,6 +535,9 @@ button.vote-button:disabled {
   .fighter h4 {
     font-size: 0.75rem;
     max-width: 80px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .vote-count {
@@ -600,4 +630,41 @@ button.vote-button:disabled {
   opacity: 0.1;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Fix specifici per i dispositivi molto piccoli */
+@media (max-width: 350px) {
+  .fighters {
+    grid-template-columns: 1fr 20px 1fr;
+    gap: 0.1rem;
+    width: 100%;
+  }
+  
+  .fighter img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .fighter h4 {
+    font-size: 0.7rem;
+    max-width: 70px;
+    width: 100%;
+  }
+  
+  .vote-controls {
+    max-width: 80px;
+    width: 100%;
+  }
+  
+  .vote-button {
+    height: 28px;
+  }
+  
+  .vote-count {
+    font-size: 0.9rem;
+  }
+  
+  .vs {
+    font-size: 0.9rem;
+  }
 } 

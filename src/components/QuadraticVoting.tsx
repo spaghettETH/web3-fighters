@@ -155,7 +155,7 @@ export const QuadraticVoting = () => {
   const handleStatusChange = async (debateId: number, newStatus: 'PENDING' | 'VOTE' | 'CLOSED') => {
     try {
       const updatedDebates = debates.map(debate => 
-        debate.id === debateId ? { ...debate, status: newStatus } : debate
+      debate.id === debateId ? { ...debate, status: newStatus } : debate
       );
       
       await saveDebates(updatedDebates);
@@ -214,22 +214,22 @@ export const QuadraticVoting = () => {
     setCredits(credits - totalVotesCost);
     updateCreditsUsed(99 - (credits - totalVotesCost));
     setVoteConfirmed(debateId);
-    
+
     try {
       setIsLoading(true);
       
       // Invia il voto al server Firebase
       await FirebaseService.sendVote(debateId, fighter1Votes, fighter2Votes);
-      
-      // Reset temporary votes and animation
-      setTimeout(() => {
-        setTemporaryVotes(prev => {
-          const newVotes = { ...prev };
-          delete newVotes[debateId];
-          return newVotes;
-        });
-        setVoteConfirmed(null);
-      }, 1000);
+
+    // Reset temporary votes and animation
+    setTimeout(() => {
+      setTemporaryVotes(prev => {
+        const newVotes = { ...prev };
+        delete newVotes[debateId];
+        return newVotes;
+      });
+      setVoteConfirmed(null);
+    }, 1000);
     } catch (err) {
       console.error('Errore nell\'invio del voto:', err);
       alert('Si è verificato un errore nell\'invio del voto. Riprova più tardi.');
