@@ -1,3 +1,4 @@
+# BlockFighters Ethcc8 - Quadratic voting platform
 User-agent: *
 Allow: /
 

@@ -19,7 +19,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const projectId = '6ff8c0473268db061676cc4aec29d469';
 
 const config = getDefaultConfig({
-  appName: 'Web3 Fighters',
+  appName: 'BlockFighters Ethcc8',
   projectId,
   chains: [mainnet, sepolia],
   transports: {
