@@ -514,6 +514,10 @@ button.vote-button:disabled {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
   }
+  
+  .logo-total {
+    max-width: 250px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -552,6 +556,14 @@ button.vote-button:disabled {
     font-size: 0.9rem;
     padding: 0.5rem;
     margin-top: 0.5rem;
+  }
+  
+  .logo-total {
+    max-width: 200px;
+  }
+  
+  .logo-container {
+    margin: 1rem auto;
   }
 }
 
@@ -666,5 +678,37 @@ button.vote-button:disabled {
   
   .vs {
     font-size: 0.9rem;
+  }
+}
+
+/* Logo Container */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.logo-total {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .logo-total {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-total {
+    max-width: 200px;
+  }
+  
+  .logo-container {
+    margin: 1rem auto;
   }
 } 

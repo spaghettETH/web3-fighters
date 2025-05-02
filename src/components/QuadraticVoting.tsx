@@ -327,8 +327,8 @@ export const QuadraticVoting = () => {
           <MatchCreator onCreateMatch={handleCreateMatch} />
         </div>
       ) : (
-        <div className="non-master-message">
-          <p>Questa sezione è disponibile solo per gli indirizzi master.</p>
+        <div className="logo-container">
+          <img src="/assets/logoTotal.png" alt="BlockFighters Logo" className="logo-total" />
         </div>
       )}
       
