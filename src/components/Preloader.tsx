@@ -1,24 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Preloader.css';
 
-const Preloader = () => {
-  const [isVisible, setIsVisible] = useState(true);
+interface PreloaderProps {
+  message?: string;
+}
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!isVisible) return null;
-
+const Preloader = ({ message = 'Caricamento in corso...' }: PreloaderProps) => {
   return (
     <div className="preloader">
       <div className="preloader-content">
         <img src="/assets/logoCol.png" alt="Web3 Fighters Logo" className="preloader-logo" />
         <div className="preloader-spinner"></div>
+        <div className="preloader-message">{message}</div>
       </div>
     </div>
   );

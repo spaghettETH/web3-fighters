@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
-import { Debate, Fighter, MASTER_ADDRESSES } from '../types';
+import { Debate, Fighter } from '../types';
 import { MasterDashboard } from './MasterDashboard';
 import { MatchCreator } from './MatchCreator';
-import { useWalletLock } from '../hooks/useWalletLock';
 import { usePinata } from '../hooks/usePinata';
+import { useAuth } from '../hooks/useAuth';
 import { IPFS_CONFIG } from '../config/ipfs';
 import { PINATA_CONFIG } from '../config/pinata';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import './QuadraticVoting.css';
 import { FirebaseService } from '../services/firebase';
 import { getDatabase, ref, set } from 'firebase/database';
@@ -17,30 +15,15 @@ interface TemporaryVotes {
 }
 
 export const QuadraticVoting = () => {
-  const { address } = useAccount();
   const { uploadJSON, getJSON, isLoading: isPinataLoading, error: pinataError } = usePinata();
+  const { isMaster, checkCanVote, registerVote } = useAuth();
   const [debates, setDebates] = useState<Debate[]>([]);
   const [temporaryVotes, setTemporaryVotes] = useState<TemporaryVotes>({});
-  const { updateCreditsUsed } = useWalletLock();
   const [isCreditsModalVisible, setIsCreditsModalVisible] = useState(false);
   const [voteConfirmed, setVoteConfirmed] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const isMaster = address ? MASTER_ADDRESSES.some(masterAddr => 
-    masterAddr.toLowerCase() === address.toLowerCase()
-  ) : false;
   
-  useEffect(() => {
-    console.log('=== DEBUG MASTER CHECK ===');
-    console.log('Current address:', address);
-    console.log('Address type:', typeof address);
-    console.log('Address lowercase:', address?.toLowerCase());
-    console.log('Master addresses:', MASTER_ADDRESSES);
-    console.log('Is master:', isMaster);
-    console.log('=== END DEBUG ===');
-  }, [address, isMaster]);
-
   useEffect(() => {
     const handleScroll = () => {
       setIsCreditsModalVisible(window.scrollY > 100);
@@ -56,11 +39,21 @@ export const QuadraticVoting = () => {
       setIsLoading(true);
       setError(null);
       
+      // Imposta un timeout massimo per il caricamento
+      const timeoutId = setTimeout(() => {
+        setError('Timeout nel caricamento dei dibattiti. Verifica la tua connessione.');
+        setIsLoading(false);
+        setDebates([]);
+      }, 8000);
+      
       // Inizializza Firebase con i dati da IPFS (se necessario)
       await FirebaseService.initializeFromIPFS(getJSON);
       
       // Imposta i listener in tempo reale
       FirebaseService.initializeRealtimeListeners((updatedDebates) => {
+        // Cancella il timeout quando riceviamo i dati
+        clearTimeout(timeoutId);
+        
         // Aggiungi le preview URL per ogni fighter
         const debatesWithPreview = updatedDebates.map((debate: Debate) => ({
           ...debate,
@@ -85,6 +78,9 @@ export const QuadraticVoting = () => {
       console.error('Errore nel caricamento dei match:', err);
       setError('Errore nel caricamento dei match. Riprova più tardi.');
       setIsLoading(false);
+      
+      // In caso di errore, carichiamo dei dibattiti vuoti per permettere all'interfaccia di funzionare
+      setDebates([]);
     }
   };
 
@@ -130,6 +126,7 @@ export const QuadraticVoting = () => {
   };
 
   useEffect(() => {
+    // Carica i dibattiti immediatamente
     loadDebates();
     
     // Sincronizzazione periodica con IPFS (solo per i master)
@@ -169,6 +166,12 @@ export const QuadraticVoting = () => {
     const selectedFighterId = temporaryVotes[debateId];
     if (!selectedFighterId) return;
 
+    // Controllo se l'utente può votare per questo dibattito
+    if (!checkCanVote(debateId)) {
+      alert('Hai già votato per questo match o stai tentando di votare troppo velocemente!');
+      return;
+    }
+
     setVoteConfirmed(debateId);
 
     try {
@@ -183,6 +186,9 @@ export const QuadraticVoting = () => {
         isFighter1 ? 1 : 0, 
         isFighter1 ? 0 : 1
       );
+
+      // Registra il voto dell'utente
+      registerVote(debateId, selectedFighterId);
 
       // Reset temporary votes and animation
       setTimeout(() => {
@@ -257,6 +263,11 @@ export const QuadraticVoting = () => {
     return temporaryVotes[debateId] === fighterId;
   };
 
+  // Verificare se un utente ha già votato per un dibattito specifico
+  const hasVoted = (debateId: number) => {
+    return !checkCanVote(debateId);
+  };
+
   return (
     <div className="quadratic-voting">
       {(isLoading || isPinataLoading) && (
@@ -274,19 +285,25 @@ export const QuadraticVoting = () => {
 
       <div className={`credits-modal ${isCreditsModalVisible ? 'visible' : ''}`}>
         <div className="credits-info">
-          <p className="wallet-address">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+          {isMaster ? (
+            <p className="user-status">Account Master</p>
+          ) : (
+            <p className="user-status">Account Utente</p>
+          )}
           <div className="logo"></div>
           <p className="credits">
-            {address ? 'Web3 Fighters' : 'Connetti il wallet'}
+            Web3 Fighters
           </p>
         </div>
       </div>
 
-      <MasterDashboard 
-        debates={debates} 
-        onStatusChange={handleStatusChange} 
-        onDeleteMatch={handleDeleteMatch}
-      />
+      {isMaster && (
+        <MasterDashboard 
+          debates={debates} 
+          onStatusChange={handleStatusChange} 
+          onDeleteMatch={handleDeleteMatch}
+        />
+      )}
       
       {isMaster ? (
         <div className="master-section">
@@ -303,10 +320,15 @@ export const QuadraticVoting = () => {
         {sortedDebates.map(debate => (
           <div 
             key={debate.id} 
-            className={`debate-card ${debate.status.toLowerCase()} ${debate.status === 'VOTE' ? 'current-match' : ''} ${voteConfirmed === debate.id ? 'vote-confirmed' : ''}`}
+            className={`debate-card ${debate.status.toLowerCase()} ${debate.status === 'VOTE' ? 'current-match' : ''} ${voteConfirmed === debate.id ? 'vote-confirmed' : ''} ${hasVoted(debate.id) ? 'already-voted' : ''}`}
           >
             <div className="arab-frame"></div>
             <h3 className="debate-title">{debate.title}</h3>
+            
+            {hasVoted(debate.id) && debate.status === 'VOTE' && (
+              <div className="already-voted-badge">Hai già votato</div>
+            )}
+            
             <div className="fighters">
               <div className={`fighter ${isLoser(debate, debate.fighter1) ? 'loser' : ''} ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}>
                 <img 
@@ -318,11 +340,11 @@ export const QuadraticVoting = () => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/default-fighter.png';
                   }}
-                  onClick={() => debate.status === 'VOTE' && handleVoteChange(debate.id, debate.fighter1.id)}
+                  onClick={() => debate.status === 'VOTE' && !hasVoted(debate.id) && handleVoteChange(debate.id, debate.fighter1.id)}
                 />
                 <h4>{debate.fighter1.name}</h4>
                 <p>Votes: {debate.fighter1.votes}</p>
-                {debate.status === 'VOTE' && (
+                {debate.status === 'VOTE' && !hasVoted(debate.id) && (
                   <button 
                     className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}
                     onClick={() => handleVoteChange(debate.id, debate.fighter1.id)}
@@ -342,11 +364,11 @@ export const QuadraticVoting = () => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/default-fighter.png';
                   }}
-                  onClick={() => debate.status === 'VOTE' && handleVoteChange(debate.id, debate.fighter2.id)}
+                  onClick={() => debate.status === 'VOTE' && !hasVoted(debate.id) && handleVoteChange(debate.id, debate.fighter2.id)}
                 />
                 <h4>{debate.fighter2.name}</h4>
                 <p>Votes: {debate.fighter2.votes}</p>
-                {debate.status === 'VOTE' && (
+                {debate.status === 'VOTE' && !hasVoted(debate.id) && (
                   <button 
                     className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter2.id) ? 'selected' : ''}`}
                     onClick={() => handleVoteChange(debate.id, debate.fighter2.id)}
@@ -361,11 +383,11 @@ export const QuadraticVoting = () => {
             </div>
             <button
               className={getVoteButtonClass(debate.status)}
-              disabled={debate.status !== 'VOTE' || !temporaryVotes[debate.id]}
+              disabled={debate.status !== 'VOTE' || !temporaryVotes[debate.id] || hasVoted(debate.id)}
               onClick={() => handleConfirmVote(debate.id)}
             >
               {debate.status === 'PENDING' && 'Pending'}
-              {debate.status === 'VOTE' && 'Conferma voto'}
+              {debate.status === 'VOTE' && (hasVoted(debate.id) ? 'Hai già votato' : 'Conferma voto')}
               {debate.status === 'CLOSED' && 'Closed'}
             </button>
           </div>

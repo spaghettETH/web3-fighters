@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, onValue, get, child } from 'firebase/database';
+import { getDatabase, ref, set, onValue, get, child, Database } from 'firebase/database';
 import { Debate } from '../types';
 import { IPFS_CONFIG } from '../config/ipfs';
 
@@ -14,12 +14,27 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+// Initialize Firebase con gestione degli errori
+let app;
+let database: Database | undefined;
+
+try {
+  app = initializeApp(firebaseConfig);
+  database = getDatabase(app);
+} catch (error) {
+  console.error('Errore nell\'inizializzazione di Firebase:', error);
+}
 
 // Riferimento ai dibattiti nel database
-const debatesRef = ref(database, 'debates');
+const getDebatesRef = () => {
+  try {
+    if (!database) return null;
+    return ref(database, 'debates');
+  } catch (error) {
+    console.error('Errore nell\'ottenere il riferimento ai dibattiti:', error);
+    return null;
+  }
+};
 
 /**
  * Classe per gestire la comunicazione con Firebase
@@ -27,6 +42,7 @@ const debatesRef = ref(database, 'debates');
 export class FirebaseService {
   static ipfsLastSyncTime: number = 0;
   static isProduction: boolean = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  static connectionTimeout: number = 5000; // 5 secondi di timeout per le connessioni
   
   /**
    * Inizializza i listener in tempo reale
@@ -34,27 +50,45 @@ export class FirebaseService {
    */
   static initializeRealtimeListeners(onDebatesUpdate: (debates: Debate[]) => void) {
     try {
+      // Verifica se Firebase è stato inizializzato correttamente
+      if (!database) {
+        console.error('Firebase non inizializzato correttamente, utilizzo dati locali');
+        onDebatesUpdate([]);
+        return;
+      }
+      
+      const debatesRef = getDebatesRef();
+      if (!debatesRef) {
+        console.error('Impossibile ottenere riferimento ai dibattiti, utilizzo dati locali');
+        onDebatesUpdate([]);
+        return;
+      }
+      
+      // Impostiamo un timeout per gestire problemi di connessione
+      const timeoutId = setTimeout(() => {
+        console.warn('Timeout nella connessione a Firebase, utilizzo dati locali');
+        onDebatesUpdate([]);
+      }, this.connectionTimeout);
+      
       onValue(debatesRef, (snapshot) => {
+        // Connessione completata con successo, annulla il timeout
+        clearTimeout(timeoutId);
+        
         const data = snapshot.val();
         if (data) {
           const debates = Object.values(data) as Debate[];
           onDebatesUpdate(debates);
         } else {
-          console.log('Nessun dato trovato in Firebase, tentativo di inizializzazione con dati locali');
-          // Se siamo in produzione, inizializziamo con dati locali
-          if (this.isProduction) {
-            const emptyDebates: Debate[] = [];
-            onDebatesUpdate(emptyDebates);
-          }
+          console.log('Nessun dato trovato in Firebase, inizializzazione con dati locali');
+          onDebatesUpdate([]);
         }
       }, (error) => {
+        clearTimeout(timeoutId);
         console.error('Errore nella connessione Firebase:', error);
-        // In caso di errore, carichiamo dati vuoti
         onDebatesUpdate([]);
       });
     } catch (error) {
       console.error('Errore nell\'inizializzazione dei listener Firebase:', error);
-      // In caso di errore, carichiamo dati vuoti
       onDebatesUpdate([]);
     }
   }
@@ -67,44 +101,67 @@ export class FirebaseService {
    */
   static async sendVote(debateId: number, fighter1Votes: number, fighter2Votes: number) {
     try {
-      // Prima otteniamo lo stato attuale
-      const snapshot = await get(debatesRef);
-      const data = snapshot.val() || {};
-      const debates = Object.values(data) as Debate[];
+      if (!database) {
+        throw new Error('Firebase non inizializzato correttamente');
+      }
       
-      // Troviamo il dibattito e aggiorniamo i voti
-      const updatedDebates = debates.map(debate => {
-        if (debate.id === debateId) {
-          return {
-            ...debate,
-            fighter1: {
-              ...debate.fighter1,
-              votes: debate.fighter1.votes + fighter1Votes
-            },
-            fighter2: {
-              ...debate.fighter2,
-              votes: debate.fighter2.votes + fighter2Votes
-            },
-            totalVotes: debate.totalVotes + fighter1Votes + fighter2Votes
-          };
+      const debatesRef = getDebatesRef();
+      if (!debatesRef) {
+        throw new Error('Impossibile ottenere riferimento ai dibattiti');
+      }
+      
+      // Imposta un timeout per l'operazione
+      const votePromise = new Promise(async (resolve, reject) => {
+        try {
+          // Prima otteniamo lo stato attuale
+          const snapshot = await get(debatesRef);
+          const data = snapshot.val() || {};
+          const debates = Object.values(data) as Debate[];
+          
+          // Troviamo il dibattito e aggiorniamo i voti
+          const updatedDebates = debates.map(debate => {
+            if (debate.id === debateId) {
+              return {
+                ...debate,
+                fighter1: {
+                  ...debate.fighter1,
+                  votes: debate.fighter1.votes + fighter1Votes
+                },
+                fighter2: {
+                  ...debate.fighter2,
+                  votes: debate.fighter2.votes + fighter2Votes
+                },
+                totalVotes: debate.totalVotes + fighter1Votes + fighter2Votes
+              };
+            }
+            return debate;
+          });
+          
+          // Salviamo in formato oggetto per Firebase
+          const debatesObject = updatedDebates.reduce((acc, debate) => {
+            acc[debate.id] = debate;
+            return acc;
+          }, {} as Record<number, Debate>);
+          
+          // Salviamo su Firebase
+          await set(debatesRef, debatesObject);
+          
+          resolve(updatedDebates);
+        } catch (error) {
+          reject(error);
         }
-        return debate;
       });
       
-      // Salviamo in formato oggetto per Firebase
-      const debatesObject = updatedDebates.reduce((acc, debate) => {
-        acc[debate.id] = debate;
-        return acc;
-      }, {} as Record<number, Debate>);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout nell\'invio del voto')), this.connectionTimeout);
+      });
       
-      // Salviamo su Firebase
-      await set(debatesRef, debatesObject);
-      
-      return updatedDebates;
+      // Attendiamo il completamento dell'operazione o il timeout
+      return await Promise.race([votePromise, timeoutPromise]) as Debate[];
     } catch (error) {
       console.error('Errore nell\'invio del voto:', error);
       
-      // In produzione, simuliamo il successo
+      // In produzione, simuliamo il successo per non bloccare l'utente
       if (this.isProduction) {
         console.log('Simulazione di voto riuscito in ambiente di produzione');
         return [];
@@ -134,6 +191,15 @@ export class FirebaseService {
     
     try {
       // Ottieni i dati attuali da Firebase
+      if (!database) {
+        throw new Error('Firebase non inizializzato correttamente');
+      }
+      
+      const debatesRef = getDebatesRef();
+      if (!debatesRef) {
+        throw new Error('Impossibile ottenere riferimento ai dibattiti');
+      }
+      
       const snapshot = await get(debatesRef);
       const data = snapshot.val() || {};
       const debates = Object.values(data) as Debate[];
@@ -181,6 +247,15 @@ export class FirebaseService {
       if (this.isProduction) {
         console.log('Inizializzazione da IPFS simulata in ambiente di produzione');
         return;
+      }
+      
+      if (!database) {
+        throw new Error('Firebase non inizializzato correttamente');
+      }
+      
+      const debatesRef = getDebatesRef();
+      if (!debatesRef) {
+        throw new Error('Impossibile ottenere riferimento ai dibattiti');
       }
       
       // Verifica se ci sono già dati in Firebase

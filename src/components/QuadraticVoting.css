@@ -675,4 +675,63 @@ button.vote-button:disabled {
   .logo-container {
     margin: 1rem auto;
   }
+}
+
+.already-voted-badge {
+  position: absolute;
+  top: 3.5rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 87, 34, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  z-index: 2;
+  font-weight: bold;
+}
+
+.already-voted .fighters {
+  opacity: 0.8;
+}
+
+.already-voted .select-fighter-btn {
+  display: none;
+}
+
+.user-status {
+  font-family: monospace;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.master-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  background: #ffd700;
+  color: #000;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.logout-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background: #d32f2f;
+}
+
+.app-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 } 

@@ -1,6 +1,6 @@
-import { useAccount } from 'wagmi';
-import { Debate, MASTER_ADDRESSES } from '../types';
+import { Debate } from '../types';
 import { FaTrash } from 'react-icons/fa';
+import { useAuth } from '../hooks/useAuth';
 
 interface MasterDashboardProps {
   debates: Debate[];
@@ -9,8 +9,7 @@ interface MasterDashboardProps {
 }
 
 export const MasterDashboard = ({ debates, onStatusChange, onDeleteMatch }: MasterDashboardProps) => {
-  const { address } = useAccount();
-  const isMaster = address && MASTER_ADDRESSES.includes(address);
+  const { isMaster } = useAuth();
 
   if (!isMaster) return null;
 
