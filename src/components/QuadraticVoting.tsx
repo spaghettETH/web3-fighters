@@ -13,21 +13,16 @@ import { FirebaseService } from '../services/firebase';
 import { getDatabase, ref, set } from 'firebase/database';
 
 interface TemporaryVotes {
-  [debateId: number]: {
-    fighter1: number;
-    fighter2: number;
-  };
+  [debateId: number]: number; // ID del fighter selezionato
 }
 
 export const QuadraticVoting = () => {
   const { address } = useAccount();
   const { uploadJSON, getJSON, isLoading: isPinataLoading, error: pinataError } = usePinata();
   const [debates, setDebates] = useState<Debate[]>([]);
-  const [credits, setCredits] = useState(99);
   const [temporaryVotes, setTemporaryVotes] = useState<TemporaryVotes>({});
   const { updateCreditsUsed } = useWalletLock();
   const [isCreditsModalVisible, setIsCreditsModalVisible] = useState(false);
-  const [creditAnimation, setCreditAnimation] = useState<'up' | 'down' | null>(null);
   const [voteConfirmed, setVoteConfirmed] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +49,6 @@ export const QuadraticVoting = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const calculateTotalVotesCost = (votes: TemporaryVotes[number]) => {
-    if (!votes) return 0;
-    return (votes.fighter1 * votes.fighter1) + (votes.fighter2 * votes.fighter2);
-  };
 
   // Carica i match da Firebase
   const loadDebates = async () => {
@@ -165,71 +155,44 @@ export const QuadraticVoting = () => {
     }
   };
 
-  const handleVoteChange = (debateId: number, fighterId: number, voteAmount: number) => {
-    const currentVotes = temporaryVotes[debateId] || { fighter1: 0, fighter2: 0 };
-    const newVotes = {
-      ...currentVotes,
-      [fighterId === debates.find(d => d.id === debateId)?.fighter1.id ? 'fighter1' : 'fighter2']: voteAmount
-    };
-
-    const currentCost = calculateTotalVotesCost(currentVotes);
-    const newCost = calculateTotalVotesCost(newVotes);
-    const costDifference = newCost - currentCost;
-
-    if (credits - costDifference < 0) {
-      alert('Non hai abbastanza crediti!');
-      return;
-    }
-
+  const handleVoteChange = (debateId: number, fighterId: number) => {
     setTemporaryVotes(prev => ({
       ...prev,
-      [debateId]: newVotes
+      [debateId]: fighterId
     }));
-
-    setCredits(credits - costDifference);
-    setCreditAnimation(costDifference > 0 ? 'down' : 'up');
-
-    // Reset animation after 500ms
-    setTimeout(() => {
-      setCreditAnimation(null);
-    }, 500);
   };
 
   const handleConfirmVote = async (debateId: number) => {
     const debate = debates.find(d => d.id === debateId);
     if (!debate) return;
 
-    const tempVotes = temporaryVotes[debateId];
-    if (!tempVotes) return;
+    const selectedFighterId = temporaryVotes[debateId];
+    if (!selectedFighterId) return;
 
-    const fighter1Votes = tempVotes.fighter1 || 0;
-    const fighter2Votes = tempVotes.fighter2 || 0;
-    const totalVotesCost = (fighter1Votes * fighter1Votes) + (fighter2Votes * fighter2Votes);
-
-    if (totalVotesCost > credits) {
-      alert('Non hai abbastanza crediti!');
-      return;
-    }
-
-    setCredits(credits - totalVotesCost);
-    updateCreditsUsed(99 - (credits - totalVotesCost));
     setVoteConfirmed(debateId);
 
     try {
       setIsLoading(true);
       
       // Invia il voto al server Firebase
-      await FirebaseService.sendVote(debateId, fighter1Votes, fighter2Votes);
+      const isFighter1 = selectedFighterId === debate.fighter1.id;
+      
+      // Invia 1 voto per il fighter selezionato e 0 per l'altro
+      await FirebaseService.sendVote(
+        debateId, 
+        isFighter1 ? 1 : 0, 
+        isFighter1 ? 0 : 1
+      );
 
-    // Reset temporary votes and animation
-    setTimeout(() => {
-      setTemporaryVotes(prev => {
-        const newVotes = { ...prev };
-        delete newVotes[debateId];
-        return newVotes;
-      });
-      setVoteConfirmed(null);
-    }, 1000);
+      // Reset temporary votes and animation
+      setTimeout(() => {
+        setTemporaryVotes(prev => {
+          const newVotes = { ...prev };
+          delete newVotes[debateId];
+          return newVotes;
+        });
+        setVoteConfirmed(null);
+      }, 1000);
     } catch (err) {
       console.error('Errore nell\'invio del voto:', err);
       alert('Si è verificato un errore nell\'invio del voto. Riprova più tardi.');
@@ -290,6 +253,10 @@ export const QuadraticVoting = () => {
     }
   };
 
+  const isFighterSelected = (debateId: number, fighterId: number) => {
+    return temporaryVotes[debateId] === fighterId;
+  };
+
   return (
     <div className="quadratic-voting">
       {(isLoading || isPinataLoading) && (
@@ -309,8 +276,8 @@ export const QuadraticVoting = () => {
         <div className="credits-info">
           <p className="wallet-address">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
           <div className="logo"></div>
-          <p className={`credits ${creditAnimation ? `credit-${creditAnimation}` : ''}`}>
-            Credits: {credits}
+          <p className="credits">
+            {address ? 'Web3 Fighters' : 'Connetti il wallet'}
           </p>
         </div>
       </div>
@@ -341,7 +308,7 @@ export const QuadraticVoting = () => {
             <div className="arab-frame"></div>
             <h3 className="debate-title">{debate.title}</h3>
             <div className="fighters">
-              <div className={`fighter ${isLoser(debate, debate.fighter1) ? 'loser' : ''}`}>
+              <div className={`fighter ${isLoser(debate, debate.fighter1) ? 'loser' : ''} ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}>
                 <img 
                   src={debate.fighter1.imageUrl.startsWith('ipfs://') 
                     ? debate.fighter1.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`) 
@@ -351,29 +318,21 @@ export const QuadraticVoting = () => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/default-fighter.png';
                   }}
+                  onClick={() => debate.status === 'VOTE' && handleVoteChange(debate.id, debate.fighter1.id)}
                 />
                 <h4>{debate.fighter1.name}</h4>
                 <p>Votes: {debate.fighter1.votes}</p>
                 {debate.status === 'VOTE' && (
-                  <div className="vote-controls">
-                    <button 
-                      className="vote-button up"
-                      onClick={() => handleVoteChange(debate.id, debate.fighter1.id, (temporaryVotes[debate.id]?.fighter1 || 0) + 1)}
-                    >
-                      <FaArrowUp />
-                    </button>
-                    <span className="vote-count">{temporaryVotes[debate.id]?.fighter1 || 0}</span>
-                    <button 
-                      className="vote-button down"
-                      onClick={() => handleVoteChange(debate.id, debate.fighter1.id, (temporaryVotes[debate.id]?.fighter1 || 0) - 1)}
-                    >
-                      <FaArrowDown />
-                    </button>
-                  </div>
+                  <button 
+                    className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}
+                    onClick={() => handleVoteChange(debate.id, debate.fighter1.id)}
+                  >
+                    {isFighterSelected(debate.id, debate.fighter1.id) ? 'Selezionato' : 'Seleziona'}
+                  </button>
                 )}
               </div>
               <div className="vs">VS</div>
-              <div className={`fighter ${isLoser(debate, debate.fighter2) ? 'loser' : ''}`}>
+              <div className={`fighter ${isLoser(debate, debate.fighter2) ? 'loser' : ''} ${isFighterSelected(debate.id, debate.fighter2.id) ? 'selected' : ''}`}>
                 <img 
                   src={debate.fighter2.imageUrl.startsWith('ipfs://') 
                     ? debate.fighter2.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`) 
@@ -383,25 +342,17 @@ export const QuadraticVoting = () => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/default-fighter.png';
                   }}
+                  onClick={() => debate.status === 'VOTE' && handleVoteChange(debate.id, debate.fighter2.id)}
                 />
                 <h4>{debate.fighter2.name}</h4>
                 <p>Votes: {debate.fighter2.votes}</p>
                 {debate.status === 'VOTE' && (
-                  <div className="vote-controls">
-                    <button 
-                      className="vote-button up"
-                      onClick={() => handleVoteChange(debate.id, debate.fighter2.id, (temporaryVotes[debate.id]?.fighter2 || 0) + 1)}
-                    >
-                      <FaArrowUp />
-                    </button>
-                    <span className="vote-count">{temporaryVotes[debate.id]?.fighter2 || 0}</span>
-                    <button 
-                      className="vote-button down"
-                      onClick={() => handleVoteChange(debate.id, debate.fighter2.id, (temporaryVotes[debate.id]?.fighter2 || 0) - 1)}
-                    >
-                      <FaArrowDown />
-                    </button>
-                  </div>
+                  <button 
+                    className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter2.id) ? 'selected' : ''}`}
+                    onClick={() => handleVoteChange(debate.id, debate.fighter2.id)}
+                  >
+                    {isFighterSelected(debate.id, debate.fighter2.id) ? 'Selezionato' : 'Seleziona'}
+                  </button>
                 )}
               </div>
             </div>
@@ -414,7 +365,7 @@ export const QuadraticVoting = () => {
               onClick={() => handleConfirmVote(debate.id)}
             >
               {debate.status === 'PENDING' && 'Pending'}
-              {debate.status === 'VOTE' && 'Confirm vote'}
+              {debate.status === 'VOTE' && 'Conferma voto'}
               {debate.status === 'CLOSED' && 'Closed'}
             </button>
           </div>

@@ -65,7 +65,7 @@ function App() {
               <header className="app-header">
                 <div className="wallet-address">0xE7D1...1A95</div>
                 <div className="logo"></div>
-                <div className="credits">Credits: 99</div>
+                <div className="app-title">Web3 Fighters</div>
               </header>
               <main>
                 <QuadraticVoting />

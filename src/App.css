@@ -646,6 +646,14 @@ body::after {
   margin: 0 auto;
 }
 
+.app-title {
+  text-align: center;
+  justify-self: center;
+  max-width: 100%;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
 .credits {
   text-align: center;
   justify-self: center;
@@ -667,6 +675,10 @@ body::after {
   .logo {
     height: 40px;
     max-width: 100%;
+  }
+  
+  .app-title {
+    font-size: 0.9rem;
   }
 }
 
@@ -698,7 +710,7 @@ body::after {
 }
 
 .sticky-header .wallet-address,
-.sticky-header .credits {
+.sticky-header .app-title {
   font-size: 0.9rem;
 }
 
@@ -714,7 +726,7 @@ body::after {
   }
 
   .sticky-header .wallet-address,
-  .sticky-header .credits {
+  .sticky-header .app-title {
     font-size: 0.8rem;
   }
 }
@@ -765,10 +777,6 @@ body::after {
     max-width: 80px;
   }
   
-  .vote-count {
-    font-size: 1rem;
-  }
-  
   .total-votes {
     font-size: 0.9rem;
   }
@@ -792,7 +800,7 @@ body::after {
   }
   
   .wallet-address,
-  .credits,
+  .app-title,
   .credits-modal .wallet-address,
   .credits-modal .credits {
     margin: 0.25rem auto;

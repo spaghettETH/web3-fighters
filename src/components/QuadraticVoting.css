@@ -228,6 +228,14 @@ body {
   width: 100%;
   max-width: 200px;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.fighter:hover {
+  transform: scale(1.05);
 }
 
 .fighter img {
@@ -237,6 +245,17 @@ body {
   border: 2px solid rgba(255, 215, 0, 0.2);
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
   object-fit: cover;
+  transition: all 0.2s ease;
+}
+
+.fighter.selected {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.fighter.selected img {
+  border: 2px solid #4CAF50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
 }
 
 .fighter h4 {
@@ -261,57 +280,24 @@ body {
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
-.vote-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 120px;
-  margin: 0.5rem auto;
-}
-
-.vote-button {
-  width: 100%;
-  height: 35px;
+.select-fighter-btn {
+  background-color: #333;
+  color: white;
   border: none;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  font-size: 1.2rem;
   transition: all 0.2s ease;
-  min-height: 36px;
-  min-width: 80px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 
-.vote-button:hover {
-  transform: scale(1.05);
-}
-
-.vote-button.up {
+.select-fighter-btn:hover {
   background-color: #4CAF50;
-  color: white;
 }
 
-.vote-button.down {
-  background-color: #f44336;
-  color: white;
-}
-
-.vote-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.vote-count {
-  font-size: 1.2rem;
-  text-align: center;
-  color: #fff;
-  min-width: 2rem;
+.select-fighter-btn.selected {
+  background-color: #4CAF50;
 }
 
 .total-votes {
@@ -469,16 +455,6 @@ button.vote-button:disabled {
     font-size: 1.2rem;
   }
   
-  .vote-controls {
-    max-width: 90px;
-    padding: 0;
-    margin: 0.25rem auto;
-  }
-  
-  .vote-button {
-    height: 32px;
-  }
-  
   .debate-title {
     width: 100%;
     font-size: 1rem;
@@ -542,10 +518,6 @@ button.vote-button:disabled {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  
-  .vote-count {
-    font-size: 1rem;
   }
   
   .total-votes {
@@ -663,21 +635,13 @@ button.vote-button:disabled {
     width: 100%;
   }
   
-  .vote-controls {
-    max-width: 80px;
-    width: 100%;
-  }
-  
-  .vote-button {
-    height: 28px;
-  }
-  
-  .vote-count {
-    font-size: 0.9rem;
-  }
-  
   .vs {
     font-size: 0.9rem;
+  }
+  
+  .select-fighter-btn {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
   }
 }
 
