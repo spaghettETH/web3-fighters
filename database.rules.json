@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "debates": {
+      ".read": true,
+      ".write": "newData.child('_auth').child('passkey').val() === 'bfethcc8master' && newData.child('_auth').child('timestamp').exists() && newData.child('_auth').child('timestamp').val() > (now - 60000)",
+      
+      "$debateId": {
+        ".validate": "newData.hasChildren(['id', 'title', 'fighter1', 'fighter2', 'status', 'totalVotes'])",
+        
+        "fighter1": {
+          "votes": {
+            ".write": "newData.parent().parent().parent().child('_auth').child('passkey').exists() && (newData.parent().parent().parent().child('_auth').child('passkey').val() === 'BFethcc8' || newData.parent().parent().parent().child('_auth').child('passkey').val() === 'bfethcc8master') && newData.parent().parent().parent().child('_auth').child('timestamp').exists() && newData.parent().parent().parent().child('_auth').child('timestamp').val() > (now - 60000)",
+            ".validate": "newData.isNumber() && newData.val() >= data.val()"
+          }
+        },
+        "fighter2": {
+          "votes": {
+            ".write": "newData.parent().parent().parent().child('_auth').child('passkey').exists() && (newData.parent().parent().parent().child('_auth').child('passkey').val() === 'BFethcc8' || newData.parent().parent().parent().child('_auth').child('passkey').val() === 'bfethcc8master') && newData.parent().parent().parent().child('_auth').child('timestamp').exists() && newData.parent().parent().parent().child('_auth').child('timestamp').val() > (now - 60000)",
+            ".validate": "newData.isNumber() && newData.val() >= data.val()"
+          }
+        },
+        "totalVotes": {
+          ".write": "newData.parent().parent().child('_auth').child('passkey').exists() && (newData.parent().parent().child('_auth').child('passkey').val() === 'BFethcc8' || newData.parent().parent().child('_auth').child('passkey').val() === 'bfethcc8master') && newData.parent().parent().child('_auth').child('timestamp').exists() && newData.parent().parent().child('_auth').child('timestamp').val() > (now - 60000)",
+          ".validate": "newData.isNumber() && newData.val() >= data.val()"
+        }
+      }
+    },
+    
+    "votes": {
+      ".read": "auth != null || root.child('_auth').child('passkey').exists()",
+      ".write": "newData.parent().child('_auth').child('passkey').exists() && (newData.parent().child('_auth').child('passkey').val() === 'BFethcc8' || newData.parent().child('_auth').child('passkey').val() === 'bfethcc8master') && newData.parent().child('_auth').child('timestamp').exists() && newData.parent().child('_auth').child('timestamp').val() > (now - 60000)",
+      
+      "$deviceId": {
+        "$debateId": {
+          ".validate": "newData.hasChildren(['deviceId', 'debateId', 'fighterId', 'timestamp'])",
+          
+          "deviceId": {
+            ".validate": "newData.isString() && newData.val() === $deviceId"
+          },
+          "debateId": {
+            ".validate": "newData.isNumber()"
+          },
+          "fighterId": {
+            ".validate": "newData.isNumber()"
+          },
+          "timestamp": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      }
+    },
+    
+    "_auth": {
+      ".write": true,
+      ".validate": "!newData.exists()"
+    }
+  }
+} 

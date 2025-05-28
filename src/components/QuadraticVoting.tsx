@@ -184,7 +184,8 @@ export const QuadraticVoting = () => {
       await FirebaseService.sendVote(
         debateId, 
         isFighter1 ? 1 : 0, 
-        isFighter1 ? 0 : 1
+        isFighter1 ? 0 : 1,
+        selectedFighterId
       );
 
       // Registra il voto dell'utente

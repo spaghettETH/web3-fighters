@@ -5,7 +5,7 @@ import {
   USER_STORAGE_KEY, 
   MIN_VOTE_INTERVAL 
 } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { getDeviceId } from '../utils/deviceId';
 
 interface UseAuthReturn {
   user: User | null;
@@ -82,10 +82,13 @@ export const useAuth = (): UseAuthReturn => {
 
   // Login con passkey
   const login = (passkey: string): boolean => {
+    // Usa l'ID dispositivo persistente invece di generare un nuovo UUID
+    const deviceId = getDeviceId();
+    
     if (passkey === PASSKEYS.MASTER) {
       // Login come master
       const newUser: User = {
-        id: uuidv4(), // Genera un ID univoco
+        id: `master_${deviceId}`, // ID basato sul dispositivo
         isMaster: true,
         votedDebates: {}
       };
@@ -96,11 +99,26 @@ export const useAuth = (): UseAuthReturn => {
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
       return true;
     } else if (passkey === PASSKEYS.USER) {
-      // Login come utente normale
+      // Login come utente normale - carica i voti precedenti se esistono
+      const existingUserData = localStorage.getItem(USER_STORAGE_KEY);
+      let votedDebates = {};
+      
+      if (existingUserData) {
+        try {
+          const parsed = JSON.parse(existingUserData);
+          // Mantiene i voti precedenti solo se è lo stesso dispositivo
+          if (parsed.id === `user_${deviceId}`) {
+            votedDebates = parsed.votedDebates || {};
+          }
+        } catch (error) {
+          console.error('Errore nel parsing dei dati utente esistenti:', error);
+        }
+      }
+      
       const newUser: User = {
-        id: uuidv4(), // Genera un ID univoco
+        id: `user_${deviceId}`, // ID basato sul dispositivo
         isMaster: false,
-        votedDebates: {}
+        votedDebates // Mantiene i voti precedenti
       };
       
       setUser(newUser);

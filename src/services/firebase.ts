@@ -2,6 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, onValue, get, child, Database } from 'firebase/database';
 import { Debate } from '../types';
 import { IPFS_CONFIG } from '../config/ipfs';
+import { PASSKEYS } from '../types';
+import { getDeviceId } from '../utils/deviceId';
 
 // Configurazione Firebase - Da sostituire con le tue credenziali
 const firebaseConfig = {
@@ -43,6 +45,84 @@ export class FirebaseService {
   static ipfsLastSyncTime: number = 0;
   static isProduction: boolean = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
   static connectionTimeout: number = 5000; // 5 secondi di timeout per le connessioni
+  
+  /**
+   * Verifica se un dispositivo ha già votato per un dibattito
+   * @param debateId ID del dibattito
+   * @returns true se il dispositivo ha già votato, false altrimenti
+   */
+  static async hasDeviceVoted(debateId: number): Promise<boolean> {
+    try {
+      // Prima controlla Firebase se disponibile
+      if (database) {
+        const deviceId = getDeviceId();
+        const voteRef = ref(database, `votes/${deviceId}/${debateId}`);
+        const snapshot = await get(voteRef);
+        
+        if (snapshot.exists()) {
+          return true;
+        }
+      }
+      
+      // Fallback: controlla localStorage
+      const deviceId = getDeviceId();
+      const storedUser = localStorage.getItem('web3_fighters_user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.id === `user_${deviceId}` && userData.votedDebates[debateId]) {
+            return true;
+          }
+        } catch (error) {
+          console.error('Errore nel parsing dei dati utente locali:', error);
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Errore nel controllo voto esistente:', error);
+      return false; // In caso di errore, permetti il voto
+    }
+  }
+  
+  /**
+   * Registra un voto nella collezione votes
+   * @param debateId ID del dibattito
+   * @param fighterId ID del fighter votato
+   */
+  static async recordVote(debateId: number, fighterId: number): Promise<void> {
+    try {
+      if (!database) {
+        return;
+      }
+      
+      const deviceId = getDeviceId();
+      const voteData = {
+        deviceId,
+        debateId,
+        fighterId,
+        timestamp: Date.now()
+      };
+      
+      // Crea un oggetto con i dati da salvare e l'autenticazione
+      const dataToSave = {
+        [`votes/${deviceId}/${debateId}`]: voteData,
+        _auth: {
+          passkey: PASSKEYS.USER,
+          timestamp: Date.now()
+        }
+      };
+      
+      // Aggiorna solo i path necessari
+      const rootRef = ref(database, '');
+      await set(rootRef, dataToSave);
+      
+      // Rimuove il campo _auth
+      await set(ref(database, '_auth'), null);
+    } catch (error) {
+      console.error('Errore nella registrazione del voto:', error);
+    }
+  }
   
   /**
    * Inizializza i listener in tempo reale
@@ -98,9 +178,16 @@ export class FirebaseService {
    * @param debateId ID del dibattito
    * @param fighter1Votes Voti per il fighter 1
    * @param fighter2Votes Voti per il fighter 2
+   * @param fighterId ID del fighter votato (1 o 2)
    */
-  static async sendVote(debateId: number, fighter1Votes: number, fighter2Votes: number) {
+  static async sendVote(debateId: number, fighter1Votes: number, fighter2Votes: number, fighterId: number = 0) {
     try {
+      // Prima verifica se questo dispositivo ha già votato
+      const hasVoted = await this.hasDeviceVoted(debateId);
+      if (hasVoted) {
+        throw new Error('Questo dispositivo ha già votato per questo dibattito');
+      }
+      
       if (!database) {
         throw new Error('Firebase non inizializzato correttamente');
       }
@@ -143,8 +230,25 @@ export class FirebaseService {
             return acc;
           }, {} as Record<number, Debate>);
           
+          // Aggiungiamo l'oggetto _auth per soddisfare le regole di sicurezza
+          const dataToSave = {
+            ...debatesObject,
+            _auth: {
+              passkey: PASSKEYS.USER,
+              timestamp: Date.now()
+            }
+          };
+          
           // Salviamo su Firebase
-          await set(debatesRef, debatesObject);
+          await set(debatesRef, dataToSave);
+          
+          // Registra il voto nella collezione votes
+          if (fighterId > 0) {
+            await this.recordVote(debateId, fighterId);
+          }
+          
+          // Invece di usare delete, rimuoviamo _auth facendo un nuovo set senza quel campo
+          await set(ref(database, '_auth'), null);
           
           resolve(updatedDebates);
         } catch (error) {
@@ -232,6 +336,27 @@ export class FirebaseService {
       
       this.ipfsLastSyncTime = now;
       console.log('Sincronizzazione con IPFS completata, nuovo hash:', hash);
+      
+      // Salva su Firebase con l'autenticazione master
+      if (debatesRef) {
+        const debatesObject = debates.reduce((acc, debate) => {
+          acc[debate.id] = debate;
+          return acc;
+        }, {} as Record<number, Debate>);
+        
+        const dataToSave = {
+          ...debatesObject,
+          _auth: {
+            passkey: PASSKEYS.MASTER,
+            timestamp: Date.now()
+          }
+        };
+        
+        await set(debatesRef, dataToSave);
+        
+        // Rimuovi il campo _auth dopo il salvataggio
+        await set(ref(database!, '_auth'), null);
+      }
     } catch (error) {
       console.error('Errore nella sincronizzazione con IPFS:', error);
     }
@@ -284,8 +409,21 @@ export class FirebaseService {
         return acc;
       }, {});
       
+      // Aggiungiamo l'oggetto _auth per soddisfare le regole di sicurezza
+      const dataToSave = {
+        ...debatesObject,
+        _auth: {
+          passkey: PASSKEYS.MASTER,
+          timestamp: Date.now()
+        }
+      };
+      
       // Salva su Firebase
-      await set(debatesRef, debatesObject);
+      await set(debatesRef, dataToSave);
+      
+      // Rimuovi il campo _auth dopo il salvataggio
+      await set(ref(database, '_auth'), null);
+      
       console.log('Database Firebase inizializzato da IPFS con successo');
     } catch (error) {
       console.error('Errore nell\'inizializzazione da IPFS:', error);
