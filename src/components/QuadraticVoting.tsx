@@ -9,7 +9,7 @@ import { FirebaseService } from '../services/firebase';
 import { getDatabase, ref, set } from 'firebase/database';
 
 interface TemporaryVotes {
-  [debateId: number]: number; // ID del fighter selezionato
+  [debateId: number]: number; // Selected fighter ID
 }
 
 export const QuadraticVoting = () => {
@@ -31,28 +31,28 @@ export const QuadraticVoting = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Carica i match da Firebase
+  // Load matches from Firebase
   const loadDebates = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Imposta un timeout massimo per il caricamento
+      // Set maximum timeout for loading
       const timeoutId = setTimeout(() => {
-        setError('Timeout nel caricamento dei dibattiti. Verifica la tua connessione.');
+        setError('Timeout while loading debates. Check your connection.');
         setIsLoading(false);
         setDebates([]);
       }, 8000);
       
-      // Non serve più inizializzazione da IPFS
-      console.log('Caricamento dibattiti da Firebase Database...');
+      // No longer need IPFS initialization
+      console.log('Loading debates from Firebase Database...');
       
-      // Imposta i listener in tempo reale
+      // Set real-time listeners
       FirebaseService.initializeRealtimeListeners((updatedDebates) => {
-        // Cancella il timeout quando riceviamo i dati
+        // Cancel timeout when we receive data
         clearTimeout(timeoutId);
         
-        // Filtra e valida i dibattiti per evitare errori
+        // Filter and validate debates to avoid errors
         const validDebates = updatedDebates.filter(debate => 
           debate && 
           debate.fighter1 && 
@@ -63,28 +63,28 @@ export const QuadraticVoting = () => {
           typeof debate.fighter2.name === 'string'
         );
         
-        // Le immagini sono già URL diretti da Firebase Storage, non serve conversione
+        // Images are already direct URLs from Firebase Storage, no conversion needed
         setDebates(validDebates);
         setIsLoading(false);
       });
     } catch (err) {
-      console.error('Errore nel caricamento dei match:', err);
-      setError('Errore nel caricamento dei match. Riprova più tardi.');
+      console.error('Error while loading matches:', err);
+      setError('Error while loading matches. Retry later.');
       setIsLoading(false);
       
-      // In caso di errore, carichiamo dei dibattiti vuoti per permettere all'interfaccia di funzionare
+      // In case of error, load empty debates to allow interface to function
       setDebates([]);
     }
   };
 
-  // Salva i match su Firebase (solo per i master)
+  // Save matches to Firebase (masters only)
   const saveDebates = async (updatedDebates: Debate[]) => {
     try {
       if (!isMaster) {
-        throw new Error('Solo i master possono aggiornare i match');
+        throw new Error('Only master can update matches');
       }
 
-      // Prima settiamo l'autenticazione globale
+      // First set global authentication
       const authData = {
         passkey: PASSKEYS.MASTER,
         timestamp: Date.now()
@@ -92,10 +92,10 @@ export const QuadraticVoting = () => {
       
       await set(ref(getDatabase(), '_auth'), authData);
       
-      // Piccola pausa per assicurarsi che _auth sia impostato
+      // Small pause to ensure _auth is set
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Salva su Firebase (formato oggetto)
+      // Save to Firebase (object format)
       const debatesObject = updatedDebates.reduce((acc, debate) => {
         acc[debate.id] = debate;
         return acc;
@@ -103,19 +103,19 @@ export const QuadraticVoting = () => {
       
       await set(ref(getDatabase(), 'debates'), debatesObject);
       
-      // Rimuove il campo _auth dopo il salvataggio
+      // Remove _auth field after saving
       await set(ref(getDatabase(), '_auth'), null);
       
-      console.log('Match salvati con successo su Firebase');
+      console.log('Matches saved successfully on Firebase');
       
     } catch (err) {
-      console.error('Errore nel salvataggio dei match:', err);
+      console.error('Error while saving matches:', err);
       throw err;
     }
   };
 
   useEffect(() => {
-    // Carica i dibattiti immediatamente
+    // Load debates immediately
     loadDebates();
   }, [isMaster]);
 
@@ -128,7 +128,7 @@ export const QuadraticVoting = () => {
       await saveDebates(updatedDebates);
       setDebates(updatedDebates);
     } catch (err) {
-      alert('Errore nel cambio di stato del match. Riprova.');
+      alert('Error while changing match status. Retry.');
     }
   };
 
@@ -146,9 +146,9 @@ export const QuadraticVoting = () => {
     const selectedFighterId = temporaryVotes[debateId];
     if (!selectedFighterId) return;
 
-    // Controllo se l'utente può votare per questo dibattito
+    // Check if user can vote for this debate
     if (!checkCanVote(debateId)) {
-      alert('Hai già votato per questo match o stai tentando di votare troppo velocemente!');
+      alert('You have already voted for this match or you are trying to vote too fast!');
       return;
     }
 
@@ -157,10 +157,10 @@ export const QuadraticVoting = () => {
     try {
       setIsLoading(true);
       
-      // Invia il voto al server Firebase
+      // Send vote to Firebase server
       const isFighter1 = selectedFighterId === debate.fighter1.id;
       
-      // Invia 1 voto per il fighter selezionato e 0 per l'altro
+      // Send 1 vote for selected fighter and 0 for the other
       await FirebaseService.sendVote(
         debateId, 
         isFighter1 ? 1 : 0, 
@@ -168,7 +168,7 @@ export const QuadraticVoting = () => {
         selectedFighterId
       );
 
-      // Registra il voto dell'utente
+      // Register user vote
       registerVote(debateId, selectedFighterId);
 
       // Reset temporary votes and animation
@@ -181,8 +181,8 @@ export const QuadraticVoting = () => {
         setVoteConfirmed(null);
       }, 1000);
     } catch (err) {
-      console.error('Errore nell\'invio del voto:', err);
-      alert('Si è verificato un errore nell\'invio del voto. Riprova più tardi.');
+      console.error('Error while sending vote:', err);
+      alert('An error occurred while sending the vote. Retry later.');
     } finally {
       setIsLoading(false);
     }
@@ -224,18 +224,18 @@ export const QuadraticVoting = () => {
       await saveDebates(updatedDebates);
       setDebates(updatedDebates);
     } catch (err) {
-      alert('Errore nella creazione del match. Riprova.');
+      alert('Error while creating match. Retry.');
     }
   };
 
   const handleDeleteMatch = async (debateId: number) => {
-    if (window.confirm('Sei sicuro di voler eliminare questo match?')) {
+    if (window.confirm('Are you sure you want to delete this match?')) {
       try {
         const updatedDebates = debates.filter(debate => debate.id !== debateId);
         await saveDebates(updatedDebates);
         setDebates(updatedDebates);
       } catch (err) {
-        alert('Errore nell\'eliminazione del match. Riprova.');
+        alert('Error while deleting match. Retry.');
       }
     }
   };
@@ -244,7 +244,7 @@ export const QuadraticVoting = () => {
     return temporaryVotes[debateId] === fighterId;
   };
 
-  // Verificare se un utente ha già votato per un dibattito specifico
+  // Check if a user has already voted for a specific debate
   const hasVoted = (debateId: number) => {
     return !checkCanVote(debateId);
   };
@@ -253,23 +253,23 @@ export const QuadraticVoting = () => {
     <div className="quadratic-voting">
       {(isLoading || isStorageLoading) && (
         <div className="loading-overlay">
-          <div className="loading-spinner">Caricamento...</div>
+          <div className="loading-spinner">Loading...</div>
         </div>
       )}
       
       {error && (
         <div className="error-message">
           {error}
-          <button onClick={loadDebates}>Riprova</button>
+          <button onClick={loadDebates}>Retry</button>
         </div>
       )}
 
       <div className={`credits-modal ${isCreditsModalVisible ? 'visible' : ''}`}>
         <div className="credits-info">
           {isMaster ? (
-            <p className="user-status">Account Master</p>
+            <p className="user-status">Master Account</p>
           ) : (
-            <p className="user-status">Account Utente</p>
+            <p className="user-status">User Account</p>
           )}
           <div className="logo"></div>
           <p className="credits">
@@ -307,7 +307,7 @@ export const QuadraticVoting = () => {
             <h3 className="debate-title">{debate.title}</h3>
             
             {hasVoted(debate.id) && debate.status === 'VOTE' && (
-              <div className="already-voted-badge">Hai già votato</div>
+              <div className="already-voted-badge">You have already voted</div>
             )}
             
             <div className="fighters">
@@ -328,7 +328,7 @@ export const QuadraticVoting = () => {
                     className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}
                     onClick={() => handleVoteChange(debate.id, debate.fighter1.id)}
                   >
-                    {isFighterSelected(debate.id, debate.fighter1.id) ? 'Selezionato' : 'Seleziona'}
+                    {isFighterSelected(debate.id, debate.fighter1.id) ? 'Selected' : 'Select'}
                   </button>
                 )}
               </div>
@@ -350,7 +350,7 @@ export const QuadraticVoting = () => {
                     className={`select-fighter-btn ${isFighterSelected(debate.id, debate.fighter2.id) ? 'selected' : ''}`}
                     onClick={() => handleVoteChange(debate.id, debate.fighter2.id)}
                   >
-                    {isFighterSelected(debate.id, debate.fighter2.id) ? 'Selezionato' : 'Seleziona'}
+                    {isFighterSelected(debate.id, debate.fighter2.id) ? 'Selected' : 'Select'}
                   </button>
                 )}
               </div>
@@ -364,7 +364,7 @@ export const QuadraticVoting = () => {
               onClick={() => handleConfirmVote(debate.id)}
             >
               {debate.status === 'PENDING' && 'Pending'}
-              {debate.status === 'VOTE' && (hasVoted(debate.id) ? 'Hai già votato' : 'Conferma voto')}
+              {debate.status === 'VOTE' && (hasVoted(debate.id) ? 'You have already voted' : 'Confirm vote')}
               {debate.status === 'CLOSED' && 'Closed'}
             </button>
           </div>

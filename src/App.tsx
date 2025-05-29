@@ -8,30 +8,30 @@ import './App.css';
 function App() {
   const { isAuthenticated, login, logout, isMaster, getUserId } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Inizializzazione...');
+  const [loadingMessage, setLoadingMessage] = useState('Initializing...');
 
   useEffect(() => {
-    // Facciamo apparire il preloader solo brevemente per dare un feedback visivo
+    // Show preloader briefly to give visual feedback
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 800); // Ridotto da 1500ms a 800ms
+    }, 800); // Reduced from 1500ms to 800ms
     
     return () => clearTimeout(timer);
   }, []);
 
   const handleLogin = (passkey: string): boolean => {
-    // Impostiamo loading a true durante il login per evitare flickering
+    // Set loading to true during login to avoid flickering
     setLoading(true);
-    setLoadingMessage('Accesso in corso...');
+    setLoadingMessage('Accessing...');
     
     const result = login(passkey);
     
-    // Se il login fallisce, rimuoviamo il loading
+    // If login fails, remove loading
     if (!result) {
       setLoading(false);
     } else {
-      // Se il login ha successo, cambiamo il messaggio e rimuoviamo il loading dopo un breve delay
-      setLoadingMessage('Caricamento dibattiti...');
+      // If login succeeds, change message and remove loading after brief delay
+      setLoadingMessage('Loading debates...');
       setTimeout(() => {
         setLoading(false);
       }, 300);
@@ -44,7 +44,7 @@ function App() {
     logout();
   };
 
-  // Mostra il preloader durante il caricamento iniziale o mentre si fa login
+  // Show preloader during initial loading or while logging in
   if (loading) {
     return <Preloader message={loadingMessage} />;
     }

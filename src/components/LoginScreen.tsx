@@ -14,7 +14,7 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
     e.preventDefault();
     
     if (!passkey.trim()) {
-      setError('Per favore, inserisci una passkey');
+      setError('Please type passkey');
       return;
     }
 
@@ -25,15 +25,15 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
       const isSuccess = onLogin(passkey);
       
       if (!isSuccess) {
-        setError('Passkey non valida. Riprova.');
+        setError('Passkey not valid. Retry.');
         setIsLoading(false);
       }
-      // Se l'accesso ha successo, non facciamo nulla qui
-      // L'App.tsx si occuperà di cambiare la vista automaticamente
-      // quando isAuthenticated diventerà true
+      // If login succeeds, we don't do anything here
+      // App.tsx will handle changing the view automatically
+      // when isAuthenticated becomes true
     } catch (error) {
-      console.error('Errore durante il login:', error);
-      setError('Si è verificato un errore durante l\'accesso. Riprova.');
+      console.error('Error while login:', error);
+      setError('Error during login. Retry.');
       setIsLoading(false);
     }
   };
@@ -46,7 +46,7 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
         </div>
         
         <h1>Web3 Fighters</h1>
-        <p className="subtitle">Accedi per votare i tuoi fighter preferiti!</p>
+        <p className="subtitle">Login to vote for your favorite fighters!</p>
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -56,7 +56,7 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
               id="passkey"
               value={passkey}
               onChange={(e) => setPasskey(e.target.value)}
-              placeholder="Inserisci la passkey"
+              placeholder="Type your passkey"
               disabled={isLoading}
               autoFocus
             />
@@ -69,13 +69,13 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
             className="login-button"
             disabled={isLoading}
           >
-            {isLoading ? 'Accesso in corso...' : 'Accedi'}
+            {isLoading ? 'Loggin in...' : 'Log in'}
           </button>
         </form>
         
         <div className="login-footer">
           <p>
-            Non hai una passkey? Contatta gli organizzatori dell'evento per ottenerne una.
+            No passkey? Contact organizers to get one.
           </p>
         </div>
       </div>

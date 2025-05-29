@@ -14,10 +14,10 @@ export const WelcomeScreen = ({ onSignMessage, hasSigned }: WelcomeScreenProps) 
     <div className="welcome-screen">
       <div className="welcome-content">
         <h1>BlockFighters Ethcc8</h1>
-        <p className="subtitle">Vota i tuoi fighter preferiti con il voto quadratico!</p>
+        <p className="subtitle">Vote for your favorite fighters!</p>
         
           <div className="connect-section">
-          <p>Per partecipare, devi prima connettere il tuo wallet:</p>
+          <p>To participate, you must first connect your wallet:</p>
           <div className="connect-button-wrapper">
             <ConnectButton 
               chainStatus="none" 
@@ -30,9 +30,9 @@ export const WelcomeScreen = ({ onSignMessage, hasSigned }: WelcomeScreenProps) 
 
         {isConnected && !hasSigned && (
           <div className="sign-section">
-            <p>Ora firma un messaggio per confermare la tua identità:</p>
+            <p>Now sign a message to confirm your identity:</p>
             <button className="sign-button" onClick={onSignMessage}>
-              Firma
+              Sign
             </button>
           </div>
         )}

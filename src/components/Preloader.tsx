@@ -5,7 +5,7 @@ interface PreloaderProps {
   message?: string;
 }
 
-const Preloader = ({ message = 'Caricamento in corso...' }: PreloaderProps) => {
+const Preloader = ({ message = 'Loading...' }: PreloaderProps) => {
   return (
     <div className="preloader">
       <div className="preloader-content">

@@ -8,27 +8,27 @@ export const WalletConnect = () => {
 
   const handleResetWallet = () => {
     if (creditsUsed > 0) {
-      alert('Non puoi sbloccare il wallet perché hai già utilizzato dei crediti per votare.');
+      alert('You cannot unlock the wallet because you have already used credits to vote.');
       return;
     }
     const success = resetWalletLock();
     if (!success) {
-      alert('Non puoi sbloccare il wallet perché hai già utilizzato dei crediti per votare.');
+      alert('You cannot unlock the wallet because you have already used credits to vote.');
     }
   };
 
   if (isWalletLocked) {
     return (
       <div className="wallet-locked">
-        <p>Hai già utilizzato un altro wallet per questa sessione.</p>
-        <p>Wallet bloccato: {lockedAddress}</p>
+        <p>You have already used another wallet for this session.</p>
+        <p>Locked wallet: {lockedAddress}</p>
         {creditsUsed > 0 ? (
           <p className="credits-warning">
-            ⚠️ Non puoi sbloccare il wallet perché hai già utilizzato {creditsUsed} crediti per votare.
+            ⚠️ You cannot unlock the wallet because you have already used {creditsUsed} credits to vote.
           </p>
         ) : (
           <button onClick={handleResetWallet} className="reset-button">
-            Sblocca Wallet
+            Unlock Wallet
           </button>
         )}
       </div>

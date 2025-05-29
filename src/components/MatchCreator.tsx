@@ -37,13 +37,13 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
     try {
       setUploadStatus(prev => ({ ...prev, [fighter]: true }));
       
-      // Carica direttamente su Firebase Storage
+      // Upload directly to Firebase Storage
       const imageUrl = await uploadImage(file);
       
       if (fighter === 'fighter1') {
         setFighter1(prev => ({ 
           ...prev, 
-          imageUrl: imageUrl // URL diretto da Firebase Storage
+          imageUrl: imageUrl // Direct URL from Firebase Storage
         }));
       } else {
         setFighter2(prev => ({ 
@@ -52,8 +52,8 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
         }));
       }
     } catch (err) {
-      console.error('Errore durante l\'upload:', err);
-      alert('Errore durante l\'upload dell\'immagine. Riprova.');
+      console.error('Upload error:', err);
+      alert('Image upload error. Retry.');
     } finally {
       setUploadStatus(prev => ({ ...prev, [fighter]: false }));
     }
@@ -63,7 +63,7 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
     e.preventDefault();
     
     if (!title || !fighter1.name || !fighter2.name || !fighter1.imageUrl || !fighter2.imageUrl) {
-      alert('Per favore, compila tutti i campi e carica le immagini per entrambi i fighter');
+      alert('Please, fill all fields and load images for both fighters');
       return;
     }
 
@@ -96,29 +96,29 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
 
   return (
     <div className="match-creator">
-      <h2>Crea Nuovo Match</h2>
+      <h2>Create New Match</h2>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="title-input">
-          <label htmlFor="title">Titolo Match</label>
+          <label htmlFor="title">Match title</label>
           <input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Inserisci il titolo del match"
+            placeholder="Type match title"
             required
           />
         </div>
         <div className="fighter-inputs">
           <div className="fighter-input">
-            <label htmlFor="fighter1">Nome Fighter 1</label>
+            <label htmlFor="fighter1">Fighter 1 Name</label>
             <input
               type="text"
               id="fighter1"
               value={fighter1.name}
               onChange={(e) => setFighter1(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Inserisci il nome del fighter 1"
+              placeholder="Type fighter 1 name"
               required
             />
             <input
@@ -128,7 +128,7 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
               required
               disabled={uploadStatus.fighter1}
             />
-            {uploadStatus.fighter1 && <div className="loading">Caricamento in corso...</div>}
+            {uploadStatus.fighter1 && <div className="loading">Loading...</div>}
             {fighter1.imageUrl && (
               <div className="image-preview">
                 <img src={fighter1.imageUrl} alt="Fighter 1" />
@@ -136,13 +136,13 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
             )}
           </div>
           <div className="fighter-input">
-            <label htmlFor="fighter2">Nome Fighter 2</label>
+            <label htmlFor="fighter2">Fighter 2 Name</label>
             <input
               type="text"
               id="fighter2"
               value={fighter2.name}
               onChange={(e) => setFighter2(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Inserisci il nome del fighter 2"
+              placeholder="Type fighter 2 name"
               required
             />
             <input
@@ -152,7 +152,7 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
               required
               disabled={uploadStatus.fighter2}
             />
-            {uploadStatus.fighter2 && <div className="loading">Caricamento in corso...</div>}
+            {uploadStatus.fighter2 && <div className="loading">Loading...</div>}
             {fighter2.imageUrl && (
               <div className="image-preview">
                 <img src={fighter2.imageUrl} alt="Fighter 2" />
@@ -164,7 +164,7 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
           type="submit" 
           disabled={isLoading || uploadStatus.fighter1 || uploadStatus.fighter2}
         >
-          {isLoading ? 'Creazione in corso...' : 'Crea Match'}
+          {isLoading ? 'Creating...' : 'Create Match'}
         </button>
       </form>
     </div>
