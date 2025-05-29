@@ -7,7 +7,28 @@
     
     "debates": {
       ".read": true,
-      ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')"
+      ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')",
+      
+      "$debateId": {
+        ".validate": "newData.hasChildren(['id', 'title', 'fighter1', 'fighter2', 'status', 'totalVotes'])",
+        
+        "fighter1": {
+          "votes": {
+            ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')",
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        },
+        "fighter2": {
+          "votes": {
+            ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')",
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        },
+        "totalVotes": {
+          ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')",
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
     },
     
     "votes": {

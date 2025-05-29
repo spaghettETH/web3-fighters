@@ -84,20 +84,12 @@ export const QuadraticVoting = () => {
         throw new Error('Solo i master possono aggiornare i match');
       }
 
-      console.log('VITE_MASTER_PASSKEY:', import.meta.env.VITE_MASTER_PASSKEY);
-      console.log('VITE_USER_PASSKEY:', import.meta.env.VITE_USER_PASSKEY);
-      console.log('PASSKEYS.MASTER:', PASSKEYS.MASTER);
-      console.log('PASSKEYS.USER:', PASSKEYS.USER);
-      console.log('Salvando match con passkey:', PASSKEYS.MASTER);
-      console.log('Timestamp attuale:', Date.now());
-
       // Prima settiamo l'autenticazione globale
       const authData = {
         passkey: PASSKEYS.MASTER,
         timestamp: Date.now()
       };
       
-      console.log('Impostando _auth con:', authData);
       await set(ref(getDatabase(), '_auth'), authData);
       
       // Piccola pausa per assicurarsi che _auth sia impostato
@@ -109,7 +101,6 @@ export const QuadraticVoting = () => {
         return acc;
       }, {} as Record<number, Debate>);
       
-      console.log('Salvando debates:', debatesObject);
       await set(ref(getDatabase(), 'debates'), debatesObject);
       
       // Rimuove il campo _auth dopo il salvataggio
@@ -119,11 +110,6 @@ export const QuadraticVoting = () => {
       
     } catch (err) {
       console.error('Errore nel salvataggio dei match:', err);
-      console.error('Dettagli errore:', {
-        message: (err as Error).message,
-        code: (err as any).code,
-        stack: (err as Error).stack
-      });
       throw err;
     }
   };
