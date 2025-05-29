@@ -1,7 +1,7 @@
 #root {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
   text-align: center;
   overflow-x: hidden;
 }
@@ -45,7 +45,7 @@
 .app {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
 }
 
 header {
@@ -454,11 +454,12 @@ body::after {
 }
 
 .app-container {
-  min-height: 100vh;
-  padding: 2rem;
-  background-color: rgba(0, 0, 0, 0.7);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   position: relative;
-  z-index: 1;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .arab-frame {
@@ -489,12 +490,11 @@ body::after {
 
 @media (max-width: 768px) {
   #root {
-    padding: 0.5rem;
+    padding: 0;
   }
 
   .app-container {
-    width: 100%;
-    overflow-x: hidden;
+    padding: 0.5rem;
   }
   
   .debate-card {
@@ -587,6 +587,10 @@ body::after {
 
 @media (max-width: 480px) {
   #root {
+    padding: 0;
+  }
+  
+  .app-container {
     padding: 0.25rem;
   }
   
@@ -752,7 +756,7 @@ body::after {
 
 @media (max-width: 480px) {
   #root {
-    padding: 0.25rem;
+    padding: 0;
     overflow-x: hidden;
     width: 100%;
   }
