@@ -7,33 +7,12 @@
     
     "debates": {
       ".read": true,
-      ".write": "root.child('_auth').child('passkey').val() === 'bfethcc8master' && root.child('_auth').child('timestamp').exists() && root.child('_auth').child('timestamp').val() > (now - 60000)",
-      
-      "$debateId": {
-        ".validate": "newData.hasChildren(['id', 'title', 'fighter1', 'fighter2', 'status', 'totalVotes'])",
-        
-        "fighter1": {
-          "votes": {
-            ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master') && root.child('_auth').child('timestamp').exists() && root.child('_auth').child('timestamp').val() > (now - 60000)",
-            ".validate": "newData.isNumber() && newData.val() >= data.val()"
-          }
-        },
-        "fighter2": {
-          "votes": {
-            ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master') && root.child('_auth').child('timestamp').exists() && root.child('_auth').child('timestamp').val() > (now - 60000)",
-            ".validate": "newData.isNumber() && newData.val() >= data.val()"
-          }
-        },
-        "totalVotes": {
-          ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master') && root.child('_auth').child('timestamp').exists() && root.child('_auth').child('timestamp').val() > (now - 60000)",
-          ".validate": "newData.isNumber() && newData.val() >= data.val()"
-        }
-      }
+      ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')"
     },
     
     "votes": {
       ".read": true,
-      ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master') && root.child('_auth').child('timestamp').exists() && root.child('_auth').child('timestamp').val() > (now - 60000)",
+      ".write": "root.child('_auth').child('passkey').exists() && (root.child('_auth').child('passkey').val() === 'BFethcc8' || root.child('_auth').child('passkey').val() === 'bfethcc8master')",
       
       "$deviceId": {
         "$debateId": {

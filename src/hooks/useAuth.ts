@@ -16,6 +16,7 @@ interface UseAuthReturn {
   checkCanVote: (debateId: number) => boolean;
   registerVote: (debateId: number, fighterId: number) => void;
   getUserId: () => string | null;
+  getCurrentPasskey: () => string | null;
 }
 
 export const useAuth = (): UseAuthReturn => {
@@ -144,6 +145,12 @@ export const useAuth = (): UseAuthReturn => {
     return user?.id || null;
   };
 
+  // Ottieni la passkey corrente per Firebase
+  const getCurrentPasskey = (): string | null => {
+    if (!user) return null;
+    return user.isMaster ? PASSKEYS.MASTER : PASSKEYS.USER;
+  };
+
   return {
     user,
     isAuthenticated,
@@ -152,6 +159,7 @@ export const useAuth = (): UseAuthReturn => {
     logout,
     checkCanVote,
     registerVote,
-    getUserId
+    getUserId,
+    getCurrentPasskey
   };
 }; 

@@ -17,8 +17,8 @@ export interface Debate {
 
 // Passkeys per l'autenticazione
 export const PASSKEYS = {
-  MASTER: 'bfethcc8master', // Permette di essere master ed editare i match
-  USER: 'BFethcc8'          // Permette agli utenti di accedere all'app
+  MASTER: import.meta.env.VITE_MASTER_PASSKEY || 'bfethcc8master', // Permette di essere master ed editare i match
+  USER: import.meta.env.VITE_USER_PASSKEY || 'BFethcc8'          // Permette agli utenti di accedere all'app
 };
 
 // Interfaccia per l'utente autenticato
