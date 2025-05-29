@@ -1,0 +1,26 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173", 
+      "http://localhost:5174",
+      "https://localhost:5173",
+      "https://localhost:5174",
+      "https://blockfighters-ethcc8-62alb.ondigitalocean.app",
+      "https://web3-fighters.netlify.app",
+      "https://web3-fighters.vercel.app",
+      "https://ethcc8-blockfighters.web.app",
+      "https://ethcc8-blockfighters.firebaseapp.com"
+    ],
+    "method": ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type", 
+      "Content-Disposition", 
+      "Firebase-Storage-Upload-Resumable",
+      "Authorization",
+      "Content-Length",
+      "User-Agent",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+] 

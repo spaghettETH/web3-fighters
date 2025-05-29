@@ -47,29 +47,29 @@ function App() {
   // Mostra il preloader durante il caricamento iniziale o mentre si fa login
   if (loading) {
     return <Preloader message={loadingMessage} />;
-  }
+    }
 
   return (
     <div className="app">
       {!isAuthenticated ? (
         <LoginScreen onLogin={handleLogin} />
-      ) : (
-        <div className="app-container">
-          <header className="app-header">
+        ) : (
+          <div className="app-container">
+            <header className="app-header">
             <div className="user-info">User ID: {getUserId()?.slice(0, 8)}...</div>
-            <div className="logo"></div>
+              <div className="logo"></div>
             <div className="app-actions">
               <button onClick={handleLogout} className="logout-button">
                 Logout
               </button>
               {isMaster && <span className="master-badge">Master</span>}
             </div>
-          </header>
-          <main>
-            <QuadraticVoting />
-          </main>
-        </div>
-      )}
+            </header>
+            <main>
+              <QuadraticVoting />
+            </main>
+          </div>
+        )}
     </div>
   );
 }

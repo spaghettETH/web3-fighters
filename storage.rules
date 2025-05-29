@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Permetti lettura pubblica di tutte le immagini
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+    
+    // Permetti upload nella cartella fighters per immagini
+    match /fighters/{imageId} {
+      allow write: if request.resource.size < 20 * 1024 * 1024 // Limite 20MB
+                   && request.resource.contentType.matches('image/.*'); // Solo immagini
+    }
+    
+    // Permetti upload nella cartella data per JSON
+    match /data/{jsonFile} {
+      allow write: if request.resource.size < 10 * 1024 * 1024 // Limite 10MB
+                   && request.resource.contentType == 'application/json'; // Solo JSON
+    }
+  }
+} 

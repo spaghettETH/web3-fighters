@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { Debate, Fighter } from '../types';
 import { MasterDashboard } from './MasterDashboard';
 import { MatchCreator } from './MatchCreator';
-import { usePinata } from '../hooks/usePinata';
+import { useFirebaseStorage } from '../hooks/useFirebaseStorage';
 import { useAuth } from '../hooks/useAuth';
-import { IPFS_CONFIG } from '../config/ipfs';
-import { PINATA_CONFIG } from '../config/pinata';
 import './QuadraticVoting.css';
 import { FirebaseService } from '../services/firebase';
 import { getDatabase, ref, set } from 'firebase/database';
@@ -15,7 +13,7 @@ interface TemporaryVotes {
 }
 
 export const QuadraticVoting = () => {
-  const { uploadJSON, getJSON, isLoading: isPinataLoading, error: pinataError } = usePinata();
+  const { uploadImage, uploadJSON, getJSON, isLoading: isStorageLoading, error: storageError } = useFirebaseStorage();
   const { isMaster, checkCanVote, registerVote } = useAuth();
   const [debates, setDebates] = useState<Debate[]>([]);
   const [temporaryVotes, setTemporaryVotes] = useState<TemporaryVotes>({});
@@ -46,32 +44,27 @@ export const QuadraticVoting = () => {
         setDebates([]);
       }, 8000);
       
-      // Inizializza Firebase con i dati da IPFS (se necessario)
-      await FirebaseService.initializeFromIPFS(getJSON);
+      // Non serve più inizializzazione da IPFS
+      console.log('Caricamento dibattiti da Firebase Database...');
       
       // Imposta i listener in tempo reale
       FirebaseService.initializeRealtimeListeners((updatedDebates) => {
         // Cancella il timeout quando riceviamo i dati
         clearTimeout(timeoutId);
         
-        // Aggiungi le preview URL per ogni fighter
-        const debatesWithPreview = updatedDebates.map((debate: Debate) => ({
-          ...debate,
-          fighter1: {
-            ...debate.fighter1,
-            previewUrl: debate.fighter1.imageUrl.startsWith('ipfs://') 
-              ? debate.fighter1.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`)
-              : debate.fighter1.imageUrl
-          },
-          fighter2: {
-            ...debate.fighter2,
-            previewUrl: debate.fighter2.imageUrl.startsWith('ipfs://') 
-              ? debate.fighter2.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`)
-              : debate.fighter2.imageUrl
-          }
-        }));
+        // Filtra e valida i dibattiti per evitare errori
+        const validDebates = updatedDebates.filter(debate => 
+          debate && 
+          debate.fighter1 && 
+          debate.fighter2 && 
+          typeof debate.fighter1.imageUrl === 'string' &&
+          typeof debate.fighter2.imageUrl === 'string' &&
+          typeof debate.fighter1.name === 'string' &&
+          typeof debate.fighter2.name === 'string'
+        );
         
-        setDebates(debatesWithPreview);
+        // Le immagini sono già URL diretti da Firebase Storage, non serve conversione
+        setDebates(validDebates);
         setIsLoading(false);
       });
     } catch (err) {
@@ -84,40 +77,31 @@ export const QuadraticVoting = () => {
     }
   };
 
-  // Salva i match su Firebase e IPFS (solo per i master)
+  // Salva i match su Firebase (solo per i master)
   const saveDebates = async (updatedDebates: Debate[]) => {
     try {
       if (!isMaster) {
         throw new Error('Solo i master possono aggiornare i match');
       }
 
-      // Rimuovi le previewUrl prima del salvataggio
-      const debatesForSaving = updatedDebates.map(debate => ({
-        ...debate,
-        fighter1: {
-          id: debate.fighter1.id,
-          name: debate.fighter1.name,
-          imageUrl: debate.fighter1.imageUrl,
-          votes: debate.fighter1.votes
-        },
-        fighter2: {
-          id: debate.fighter2.id,
-          name: debate.fighter2.name,
-          imageUrl: debate.fighter2.imageUrl,
-          votes: debate.fighter2.votes
-        }
-      }));
+      // Prima settiamo l'autenticazione globale
+      await set(ref(getDatabase(), '_auth'), {
+        passkey: 'bfethcc8master', // PASSKEYS.MASTER
+        timestamp: Date.now()
+      });
 
       // Salva su Firebase (formato oggetto)
-      const debatesObject = debatesForSaving.reduce((acc, debate) => {
+      const debatesObject = updatedDebates.reduce((acc, debate) => {
         acc[debate.id] = debate;
         return acc;
       }, {} as Record<number, Debate>);
       
       await set(ref(getDatabase(), 'debates'), debatesObject);
       
-      // Sincronizza con IPFS
-      await FirebaseService.syncWithIPFS(uploadJSON);
+      // Rimuove il campo _auth dopo il salvataggio
+      await set(ref(getDatabase(), '_auth'), null);
+      
+      console.log('Match salvati con successo su Firebase');
       
     } catch (err) {
       console.error('Errore nel salvataggio dei match:', err);
@@ -128,15 +112,6 @@ export const QuadraticVoting = () => {
   useEffect(() => {
     // Carica i dibattiti immediatamente
     loadDebates();
-    
-    // Sincronizzazione periodica con IPFS (solo per i master)
-    if (isMaster) {
-      const ipfsSyncInterval = setInterval(() => {
-        FirebaseService.syncWithIPFS(uploadJSON);
-      }, 300000); // Ogni 5 minuti
-      
-      return () => clearInterval(ipfsSyncInterval);
-    }
   }, [isMaster]);
 
   const handleStatusChange = async (debateId: number, newStatus: 'PENDING' | 'VOTE' | 'CLOSED') => {
@@ -271,7 +246,7 @@ export const QuadraticVoting = () => {
 
   return (
     <div className="quadratic-voting">
-      {(isLoading || isPinataLoading) && (
+      {(isLoading || isStorageLoading) && (
         <div className="loading-overlay">
           <div className="loading-spinner">Caricamento...</div>
         </div>
@@ -333,9 +308,7 @@ export const QuadraticVoting = () => {
             <div className="fighters">
               <div className={`fighter ${isLoser(debate, debate.fighter1) ? 'loser' : ''} ${isFighterSelected(debate.id, debate.fighter1.id) ? 'selected' : ''}`}>
                 <img 
-                  src={debate.fighter1.imageUrl.startsWith('ipfs://') 
-                    ? debate.fighter1.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`) 
-                    : debate.fighter1.imageUrl}
+                  src={debate.fighter1.imageUrl}
                   alt={debate.fighter1.name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -357,9 +330,7 @@ export const QuadraticVoting = () => {
               <div className="vs">VS</div>
               <div className={`fighter ${isLoser(debate, debate.fighter2) ? 'loser' : ''} ${isFighterSelected(debate.id, debate.fighter2.id) ? 'selected' : ''}`}>
                 <img 
-                  src={debate.fighter2.imageUrl.startsWith('ipfs://') 
-                    ? debate.fighter2.imageUrl.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`) 
-                    : debate.fighter2.imageUrl}
+                  src={debate.fighter2.imageUrl}
                   alt={debate.fighter2.name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;

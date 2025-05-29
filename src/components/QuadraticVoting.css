@@ -399,7 +399,7 @@ button.vote-button:disabled {
     width: 100%;
     overflow-x: hidden;
   }
-  
+
   .credits-info {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 0.5rem;
@@ -409,25 +409,25 @@ button.vote-button:disabled {
     width: 100%;
     box-sizing: border-box;
   }
-  
+
   .credits-info .logo {
     height: 30px;
   }
-  
+
   .debates-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 0;
     width: 100%;
   }
-  
+
   .debate-card {
     padding: 1rem;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
   }
-  
+
   .fighters {
     grid-template-columns: 1fr 30px 1fr;
     gap: 0.25rem;
@@ -440,21 +440,21 @@ button.vote-button:disabled {
     gap: 0.25rem;
     max-width: 100%;
   }
-  
+
   .fighter img {
     width: 60px;
     height: 60px;
   }
-  
+
   .fighter h4 {
     font-size: 0.85rem;
     max-width: 100px;
   }
-  
+
   .vs {
     font-size: 1.2rem;
   }
-  
+
   .debate-title {
     width: 100%;
     font-size: 1rem;
@@ -479,7 +479,7 @@ button.vote-button:disabled {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-  
+
   .status-controls {
     display: flex;
     flex-wrap: wrap;
@@ -502,16 +502,16 @@ button.vote-button:disabled {
     text-align: center;
     padding: 0.25rem;
   }
-  
+
   .credits-info .logo {
     height: 25px;
   }
-  
+
   .fighter img {
     width: 50px;
     height: 50px;
   }
-  
+
   .fighter h4 {
     font-size: 0.75rem;
     max-width: 80px;

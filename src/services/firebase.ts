@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, onValue, get, child, Database } from 'firebase/database';
 import { Debate } from '../types';
-import { IPFS_CONFIG } from '../config/ipfs';
 import { PASSKEYS } from '../types';
 import { getDeviceId } from '../utils/deviceId';
 
@@ -86,16 +85,17 @@ export class FirebaseService {
   }
   
   /**
-   * Registra un voto nella collezione votes
+   * Registra un voto nella collezione votes di Firebase
    * @param debateId ID del dibattito
    * @param fighterId ID del fighter votato
    */
   static async recordVote(debateId: number, fighterId: number): Promise<void> {
     try {
       if (!database) {
+        console.error('Firebase non inizializzato');
         return;
       }
-      
+
       const deviceId = getDeviceId();
       const voteData = {
         deviceId,
@@ -103,22 +103,10 @@ export class FirebaseService {
         fighterId,
         timestamp: Date.now()
       };
+
+      // L'autenticazione è già stata impostata da sendVote, quindi possiamo scrivere direttamente
+      await set(ref(database, `votes/${deviceId}/${debateId}`), voteData);
       
-      // Crea un oggetto con i dati da salvare e l'autenticazione
-      const dataToSave = {
-        [`votes/${deviceId}/${debateId}`]: voteData,
-        _auth: {
-          passkey: PASSKEYS.USER,
-          timestamp: Date.now()
-        }
-      };
-      
-      // Aggiorna solo i path necessari
-      const rootRef = ref(database, '');
-      await set(rootRef, dataToSave);
-      
-      // Rimuove il campo _auth
-      await set(ref(database, '_auth'), null);
     } catch (error) {
       console.error('Errore nella registrazione del voto:', error);
     }
@@ -200,7 +188,13 @@ export class FirebaseService {
       // Imposta un timeout per l'operazione
       const votePromise = new Promise(async (resolve, reject) => {
         try {
-          // Prima otteniamo lo stato attuale
+          // Prima settiamo l'autenticazione globale
+          await set(ref(database, '_auth'), {
+            passkey: PASSKEYS.USER,
+            timestamp: Date.now()
+          });
+
+          // Poi otteniamo lo stato attuale
           const snapshot = await get(debatesRef);
           const data = snapshot.val() || {};
           const debates = Object.values(data) as Debate[];
@@ -224,30 +218,21 @@ export class FirebaseService {
             return debate;
           });
           
-          // Salviamo in formato oggetto per Firebase
+          // Salviamo in formato oggetto per Firebase (senza _auth interno)
           const debatesObject = updatedDebates.reduce((acc, debate) => {
             acc[debate.id] = debate;
             return acc;
           }, {} as Record<number, Debate>);
           
-          // Aggiungiamo l'oggetto _auth per soddisfare le regole di sicurezza
-          const dataToSave = {
-            ...debatesObject,
-            _auth: {
-              passkey: PASSKEYS.USER,
-              timestamp: Date.now()
-            }
-          };
-          
           // Salviamo su Firebase
-          await set(debatesRef, dataToSave);
+          await set(debatesRef, debatesObject);
           
           // Registra il voto nella collezione votes
           if (fighterId > 0) {
             await this.recordVote(debateId, fighterId);
           }
           
-          // Invece di usare delete, rimuoviamo _auth facendo un nuovo set senza quel campo
+          // Rimuoviamo l'autenticazione
           await set(ref(database, '_auth'), null);
           
           resolve(updatedDebates);
@@ -276,157 +261,20 @@ export class FirebaseService {
   }
   
   /**
-   * Sincronizza i dati tra Firebase e IPFS
-   * @param uploadJSON Funzione per caricare JSON su IPFS
+   * Sincronizza i dati (ora solo interno a Firebase, senza IPFS)
+   * @param uploadJSON Funzione per caricare JSON (ora opzionale)
    */
-  static async syncWithIPFS(uploadJSON: (json: any) => Promise<string>) {
-    // Se siamo in produzione, simuliamo la sincronizzazione
-    if (this.isProduction) {
-      console.log('Sincronizzazione IPFS simulata in ambiente di produzione');
-      return;
-    }
-    
-    // Limita la sincronizzazione a una volta ogni 60 secondi
-    const now = Date.now();
-    if (now - this.ipfsLastSyncTime < 60000) {
-      console.log('Sincronizzazione con IPFS saltata, troppo recente');
-      return;
-    }
-    
-    try {
-      // Ottieni i dati attuali da Firebase
-      if (!database) {
-        throw new Error('Firebase non inizializzato correttamente');
-      }
-      
-      const debatesRef = getDebatesRef();
-      if (!debatesRef) {
-        throw new Error('Impossibile ottenere riferimento ai dibattiti');
-      }
-      
-      const snapshot = await get(debatesRef);
-      const data = snapshot.val() || {};
-      const debates = Object.values(data) as Debate[];
-      
-      if (debates.length === 0) {
-        console.log('Nessun dibattito da sincronizzare con IPFS');
-        return;
-      }
-      
-      // Prepara i dati per IPFS (rimuovi campi non necessari)
-      const debatesForIPFS = debates.map(debate => ({
-        ...debate,
-        fighter1: {
-          id: debate.fighter1.id,
-          name: debate.fighter1.name,
-          imageUrl: debate.fighter1.imageUrl,
-          votes: debate.fighter1.votes
-        },
-        fighter2: {
-          id: debate.fighter2.id,
-          name: debate.fighter2.name,
-          imageUrl: debate.fighter2.imageUrl,
-          votes: debate.fighter2.votes
-        }
-      }));
-      
-      // Carica su IPFS
-      const hash = await uploadJSON({ debates: debatesForIPFS });
-      IPFS_CONFIG.updateRootHash(hash);
-      
-      this.ipfsLastSyncTime = now;
-      console.log('Sincronizzazione con IPFS completata, nuovo hash:', hash);
-      
-      // Salva su Firebase con l'autenticazione master
-      if (debatesRef) {
-        const debatesObject = debates.reduce((acc, debate) => {
-          acc[debate.id] = debate;
-          return acc;
-        }, {} as Record<number, Debate>);
-        
-        const dataToSave = {
-          ...debatesObject,
-          _auth: {
-            passkey: PASSKEYS.MASTER,
-            timestamp: Date.now()
-          }
-        };
-        
-        await set(debatesRef, dataToSave);
-        
-        // Rimuovi il campo _auth dopo il salvataggio
-        await set(ref(database!, '_auth'), null);
-      }
-    } catch (error) {
-      console.error('Errore nella sincronizzazione con IPFS:', error);
-    }
+  static async syncWithIPFS(uploadJSON?: (json: any) => Promise<string>) {
+    console.log('Sincronizzazione IPFS rimossa - usando solo Firebase Database');
+    // Non facciamo più nulla qui, i dati sono già sincronizzati via Firebase Real-time Database
   }
   
   /**
-   * Carica i dati iniziali da IPFS a Firebase
-   * @param getJSON Funzione per ottenere JSON da IPFS
+   * Carica i dati iniziali (ora gestito automaticamente da Firebase)
+   * @param getJSON Funzione per ottenere JSON (ora opzionale)
    */
-  static async initializeFromIPFS(getJSON: (ipfsHash: string) => Promise<any>) {
-    try {
-      // Se siamo in produzione, simuliamo l'inizializzazione
-      if (this.isProduction) {
-        console.log('Inizializzazione da IPFS simulata in ambiente di produzione');
-        return;
-      }
-      
-      if (!database) {
-        throw new Error('Firebase non inizializzato correttamente');
-      }
-      
-      const debatesRef = getDebatesRef();
-      if (!debatesRef) {
-        throw new Error('Impossibile ottenere riferimento ai dibattiti');
-      }
-      
-      // Verifica se ci sono già dati in Firebase
-      const snapshot = await get(debatesRef);
-      if (snapshot.exists()) {
-        console.log('Database Firebase già inizializzato, salto il caricamento da IPFS');
-        return;
-      }
-      
-      // Ottieni i dati da IPFS
-      const currentHash = IPFS_CONFIG.getRootHash();
-      if (!currentHash) {
-        console.log('Nessun hash IPFS, inizializzazione saltata');
-        return;
-      }
-      
-      const data = await getJSON(currentHash);
-      if (!data || !data.debates || data.debates.length === 0) {
-        console.log('Nessun dibattito trovato su IPFS');
-        return;
-      }
-      
-      // Converti in formato oggetto per Firebase
-      const debatesObject = data.debates.reduce((acc: Record<string, any>, debate: Debate) => {
-        acc[debate.id] = debate;
-        return acc;
-      }, {});
-      
-      // Aggiungiamo l'oggetto _auth per soddisfare le regole di sicurezza
-      const dataToSave = {
-        ...debatesObject,
-        _auth: {
-          passkey: PASSKEYS.MASTER,
-          timestamp: Date.now()
-        }
-      };
-      
-      // Salva su Firebase
-      await set(debatesRef, dataToSave);
-      
-      // Rimuovi il campo _auth dopo il salvataggio
-      await set(ref(database, '_auth'), null);
-      
-      console.log('Database Firebase inizializzato da IPFS con successo');
-    } catch (error) {
-      console.error('Errore nell\'inizializzazione da IPFS:', error);
-    }
+  static async initializeFromIPFS(getJSON?: (ipfsHash: string) => Promise<any>) {
+    console.log('Inizializzazione da IPFS rimossa - usando solo Firebase Database');
+    // Non facciamo più nulla qui, Firebase Database gestisce tutto automaticamente
   }
 } 

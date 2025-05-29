@@ -15,8 +15,8 @@ export const WelcomeScreen = ({ onSignMessage, hasSigned }: WelcomeScreenProps) 
       <div className="welcome-content">
         <h1>BlockFighters Ethcc8</h1>
         <p className="subtitle">Vota i tuoi fighter preferiti con il voto quadratico!</p>
-
-        <div className="connect-section">
+        
+          <div className="connect-section">
           <p>Per partecipare, devi prima connettere il tuo wallet:</p>
           <div className="connect-button-wrapper">
             <ConnectButton 

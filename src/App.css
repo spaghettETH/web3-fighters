@@ -502,30 +502,30 @@ body::after {
     max-width: 100%;
     padding: 1rem;
   }
-  
+
   .fighters {
     grid-template-columns: 1fr 40px 1fr;
     gap: 0.5rem;
   }
-  
+
   .fighter img {
     width: 60px;
     height: 60px;
   }
-  
+
   .fighter h4 {
     font-size: 0.85rem;
     max-width: 100px;
   }
-  
+
   .vs {
     font-size: 1.2rem;
   }
-  
+
   .vote-controls {
     max-width: 100px;
   }
-  
+
   .vote-button {
     height: 32px;
   }

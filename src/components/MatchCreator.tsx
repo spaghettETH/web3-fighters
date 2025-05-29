@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Debate, Fighter } from '../types';
-import { usePinata } from '../hooks/usePinata';
-import { PINATA_CONFIG } from '../config/pinata';
+import { useFirebaseStorage } from '../hooks/useFirebaseStorage';
 import './MatchCreator.css';
 
 interface MatchCreatorProps {
@@ -9,7 +8,7 @@ interface MatchCreatorProps {
 }
 
 export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
-  const { uploadImage, isLoading, error } = usePinata();
+  const { uploadImage, isLoading, error } = useFirebaseStorage();
   const [title, setTitle] = useState('');
   const [fighter1, setFighter1] = useState<Fighter>({
     id: 1,
@@ -38,27 +37,20 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
     try {
       setUploadStatus(prev => ({ ...prev, [fighter]: true }));
       
-      // Prima carichiamo su Pinata
-      const ipfsHash = await uploadImage(file);
+      // Carica direttamente su Firebase Storage
+      const imageUrl = await uploadImage(file);
       
-      // Poi mostriamo una preview usando il gateway personalizzato di Pinata
-      const imageUrl = ipfsHash.startsWith('ipfs://') 
-        ? ipfsHash.replace('ipfs://', `https://${PINATA_CONFIG.GATEWAY}/ipfs/`)
-        : ipfsHash;
-      
-        if (fighter === 'fighter1') {
+      if (fighter === 'fighter1') {
         setFighter1(prev => ({ 
           ...prev, 
-          imageUrl: ipfsHash, // Salviamo l'hash IPFS
-          previewUrl: imageUrl // Usiamo l'URL del gateway per la preview
+          imageUrl: imageUrl // URL diretto da Firebase Storage
         }));
-        } else {
+      } else {
         setFighter2(prev => ({ 
           ...prev, 
-          imageUrl: ipfsHash,
-          previewUrl: imageUrl
+          imageUrl: imageUrl
         }));
-        }
+      }
     } catch (err) {
       console.error('Errore durante l\'upload:', err);
       alert('Errore durante l\'upload dell\'immagine. Riprova.');
@@ -137,9 +129,9 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
               disabled={uploadStatus.fighter1}
             />
             {uploadStatus.fighter1 && <div className="loading">Caricamento in corso...</div>}
-            {fighter1.previewUrl && (
+            {fighter1.imageUrl && (
               <div className="image-preview">
-                <img src={fighter1.previewUrl} alt="Fighter 1 preview" />
+                <img src={fighter1.imageUrl} alt="Fighter 1" />
               </div>
             )}
           </div>
@@ -161,9 +153,9 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
               disabled={uploadStatus.fighter2}
             />
             {uploadStatus.fighter2 && <div className="loading">Caricamento in corso...</div>}
-            {fighter2.previewUrl && (
+            {fighter2.imageUrl && (
               <div className="image-preview">
-                <img src={fighter2.previewUrl} alt="Fighter 2 preview" />
+                <img src={fighter2.imageUrl} alt="Fighter 2" />
               </div>
             )}
           </div>
