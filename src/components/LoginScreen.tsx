@@ -144,6 +144,19 @@ export const LoginScreen = () => {
               <li>A device with biometric support (Touch ID, Face ID, Windows Hello)</li>
               <li>An HTTPS connection (required for passkeys)</li>
             </ul>
+            
+            {/* Debug info for troubleshooting */}
+            <details style={{ marginTop: '1rem', color: '#888', fontSize: '0.8rem' }}>
+              <summary>Debug Info (for troubleshooting)</summary>
+              <div style={{ marginTop: '0.5rem', textAlign: 'left' }}>
+                <p>User Agent: {navigator.userAgent}</p>
+                <p>Protocol: {window.location.protocol}</p>
+                <p>Hostname: {window.location.hostname}</p>
+                <p>Secure Context: {window.isSecureContext ? 'Yes' : 'No'}</p>
+                <p>PublicKeyCredential: {window.PublicKeyCredential ? 'Available' : 'Not Available'}</p>
+                <p>Credentials API: {navigator.credentials ? 'Available' : 'Not Available'}</p>
+              </div>
+            </details>
           </div>
         </div>
       </div>

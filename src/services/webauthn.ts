@@ -35,7 +35,41 @@ const RP_ID = window.location.hostname;
 export class WebAuthnService {
   // Verifica se WebAuthn è supportato
   static isSupported(): boolean {
-    return browserSupportsWebAuthn();
+    console.log('Checking WebAuthn support...');
+    
+    // Controlli più dettagliati per il supporto
+    const hasWebAuthn = window.PublicKeyCredential !== undefined;
+    const hasCredentialsAPI = navigator.credentials !== undefined;
+    const isSecureContext = window.isSecureContext;
+    
+    console.log('WebAuthn checks:', {
+      hasWebAuthn,
+      hasCredentialsAPI, 
+      isSecureContext,
+      userAgent: navigator.userAgent,
+      hostname: window.location.hostname,
+      protocol: window.location.protocol
+    });
+    
+    // Per sviluppo locale, permetti anche localhost su HTTP
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1';
+    
+    if (!isSecureContext && !isLocalhost) {
+      console.warn('WebAuthn requires HTTPS connection');
+      return false;
+    }
+    
+    if (!hasWebAuthn || !hasCredentialsAPI) {
+      console.warn('WebAuthn APIs not available');
+      return false;
+    }
+    
+    // Usa anche il controllo della libreria SimpleWebAuthn come fallback
+    const simpleWebAuthnCheck = browserSupportsWebAuthn();
+    console.log('SimpleWebAuthn library check:', simpleWebAuthnCheck);
+    
+    return hasWebAuthn && hasCredentialsAPI && (isSecureContext || isLocalhost);
   }
 
   // Genera challenge casuale
@@ -101,15 +135,17 @@ export class WebAuthnService {
         },
         challenge,
         pubKeyCredParams: [
-          { alg: -7, type: 'public-key' },
-          { alg: -257, type: 'public-key' },
+          { alg: -7, type: 'public-key' },   // ES256
+          { alg: -257, type: 'public-key' }, // RS256
+          { alg: -37, type: 'public-key' },  // PS256 - aggiunto per maggiore compatibilità
         ],
         timeout: 60000,
-        attestation: 'direct',
+        attestation: 'none', // Cambiato da 'direct' a 'none' per compatibilità
         authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
+          // Rimosso authenticatorAttachment per permettere sia platform che cross-platform
+          userVerification: 'preferred', // Cambiato da 'required' a 'preferred'
           residentKey: 'preferred',
+          requireResidentKey: false, // Aggiunto esplicitamente
         },
       };
 
@@ -209,7 +245,8 @@ export class WebAuthnService {
         user.credentials.map(cred => ({
           id: cred.id,
           type: 'public-key' as const,
-          transports: ['internal', 'hybrid'] as AuthenticatorTransport[],
+          // Migliore supporto per dispositivi mobili con più opzioni di trasporto
+          transports: ['internal', 'hybrid', 'usb', 'nfc', 'ble'] as AuthenticatorTransport[],
         }))
       );
 
@@ -221,7 +258,7 @@ export class WebAuthnService {
         timeout: 60000,
         rpId: RP_ID,
         allowCredentials,
-        userVerification: 'required',
+        userVerification: 'preferred', // Cambiato da 'required' a 'preferred'
       };
 
       console.log('Starting authentication with options:', { rpId: RP_ID, allowCredentials: allowCredentials.length });
