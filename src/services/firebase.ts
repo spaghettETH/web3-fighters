@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, onValue, get, child, Database } from 'firebase/database';
 import { Debate } from '../types';
-import { PASSKEYS } from '../types';
 import { getDeviceId } from '../utils/deviceId';
 
 // Configurazione Firebase - Da sostituire con le tue credenziali
@@ -14,6 +13,9 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
 };
+
+// Token di accesso per Firebase (sostituisce le PASSKEYS testuali)
+const FIREBASE_ACCESS_TOKEN = import.meta.env.VITE_FIREBASE_ACCESS_TOKEN || 'web3fighters_access_2024';
 
 // Initialize Firebase con gestione degli errori
 let app;
@@ -65,11 +67,11 @@ export class FirebaseService {
       
       // Fallback: controlla localStorage
       const deviceId = getDeviceId();
-      const storedUser = localStorage.getItem('web3_fighters_user');
+      const storedUser = localStorage.getItem('web3fighters_user');
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
-          if (userData.id === `user_${deviceId}` && userData.votedDebates[debateId]) {
+          if (userData.id && userData.votedDebates[debateId]) {
             return true;
           }
         } catch (error) {
@@ -188,9 +190,9 @@ export class FirebaseService {
       // Imposta un timeout per l'operazione
       const votePromise = new Promise(async (resolve, reject) => {
         try {
-          // Prima settiamo l'autenticazione globale
+          // Prima settiamo l'autenticazione globale con il token di accesso
           await set(ref(database, '_auth'), {
-            passkey: PASSKEYS.USER,
+            accessToken: FIREBASE_ACCESS_TOKEN,
             timestamp: Date.now()
           });
 
@@ -242,39 +244,64 @@ export class FirebaseService {
       });
       
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout nell\'invio del voto')), this.connectionTimeout);
+        setTimeout(() => reject(new Error('Timeout: operazione di voto troppo lenta')), 10000);
       });
       
-      // Attendiamo il completamento dell'operazione o il timeout
-      return await Promise.race([votePromise, timeoutPromise]) as Debate[];
+      return await Promise.race([votePromise, timeoutPromise]);
     } catch (error) {
       console.error('Errore nell\'invio del voto:', error);
-      
-      // In produzione, simuliamo il successo per non bloccare l'utente
-      if (this.isProduction) {
-        console.log('Simulazione di voto riuscito in ambiente di produzione');
-        return [];
-      }
-      
       throw error;
     }
   }
-  
+
   /**
-   * Sincronizza i dati (ora solo interno a Firebase, senza IPFS)
-   * @param uploadJSON Funzione per caricare JSON (ora opzionale)
+   * Funzione per autorizzare operazioni master (per creazione/modifica dibattiti)
+   */
+  static async setMasterAuth(): Promise<void> {
+    try {
+      if (!database) {
+        throw new Error('Firebase non inizializzato');
+      }
+      
+      await set(ref(database, '_auth'), {
+        accessToken: FIREBASE_ACCESS_TOKEN,
+        isMaster: true,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error('Errore nell\'impostazione autorizzazione master:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Funzione per rimuovere l'autorizzazione
+   */
+  static async clearAuth(): Promise<void> {
+    try {
+      if (!database) return;
+      await set(ref(database, '_auth'), null);
+    } catch (error) {
+      console.error('Errore nella rimozione autorizzazione:', error);
+    }
+  }
+
+  /**
+   * Sincronizza i dibattiti con IPFS (solo per master)
+   * @param uploadJSON Funzione per caricare JSON su IPFS
    */
   static async syncWithIPFS(uploadJSON?: (json: any) => Promise<string>) {
-    console.log('Sincronizzazione IPFS rimossa - usando solo Firebase Database');
-    // Non facciamo più nulla qui, i dati sono già sincronizzati via Firebase Real-time Database
+    // Implementazione per la sincronizzazione IPFS se necessaria
+    console.log('Sincronizzazione IPFS non implementata in questa versione');
   }
-  
+
   /**
-   * Carica i dati iniziali (ora gestito automaticamente da Firebase)
-   * @param getJSON Funzione per ottenere JSON (ora opzionale)
+   * Inizializza da IPFS (fallback se Firebase non è disponibile)
+   * @param getJSON Funzione per recuperare JSON da IPFS
    */
   static async initializeFromIPFS(getJSON?: (ipfsHash: string) => Promise<any>) {
-    console.log('Inizializzazione da IPFS rimossa - usando solo Firebase Database');
-    // Non facciamo più nulla qui, Firebase Database gestisce tutto automaticamente
+    // Implementazione per l'inizializzazione da IPFS se necessaria
+    console.log('Inizializzazione IPFS non implementata in questa versione');
+    return [];
   }
 } 

@@ -32,6 +32,9 @@ export interface User {
       fighterId: number;   // ID del fighter votato
     }
   };
+  // Campi aggiuntivi per WebAuthn
+  webauthnUserId?: string; // ID dell'utente WebAuthn
+  displayName?: string;    // Nome visualizzato dell'utente
 }
 
 // Chiave per salvare i dati utente nel localStorage

@@ -1005,4 +1005,12 @@ button.vote-button:disabled {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+/* User name in credits modal */
+.user-name {
+  color: #e6b800;
+  font-weight: bold;
+  margin: 5px 0;
+  font-size: 0.9rem;
 } 

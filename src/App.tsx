@@ -1,76 +1,92 @@
 import { useState, useEffect } from 'react';
 import { QuadraticVoting } from './components/QuadraticVoting';
 import { LoginScreen } from './components/LoginScreen';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, AuthProvider } from './hooks/useAuth';
 import Preloader from './components/Preloader';
 import './App.css';
 
-function App() {
-  const { isAuthenticated, login, logout, isMaster, getUserId } = useAuth();
+function AppContent() {
+  const { isAuthenticated, logout, isMaster, getUserDisplayName } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Initializing...');
+
+  // Log every render to see current state
+  useEffect(() => {
+    console.log('App render - isAuthenticated:', isAuthenticated, 'loading:', loading);
+  });
 
   useEffect(() => {
     // Show preloader briefly to give visual feedback
     const timer = setTimeout(() => {
+      console.log('App: Preloader timeout finished, setting loading to false');
       setLoading(false);
-    }, 800); // Reduced from 1500ms to 800ms
+    }, 800);
     
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (passkey: string): boolean => {
-    // Set loading to true during login to avoid flickering
-    setLoading(true);
-    setLoadingMessage('Accessing...');
-    
-    const result = login(passkey);
-    
-    // If login fails, remove loading
-    if (!result) {
+  // If user becomes authenticated, stop loading immediately
+  useEffect(() => {
+    console.log('App: useEffect for isAuthenticated triggered, value:', isAuthenticated);
+    if (isAuthenticated) {
+      console.log('App: User authenticated, stopping preloader');
       setLoading(false);
-    } else {
-      // If login succeeds, change message and remove loading after brief delay
-      setLoadingMessage('Loading debates...');
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
     }
-    
-    return result;
-  };
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();
   };
 
-  // Show preloader during initial loading or while logging in
-  if (loading) {
-    return <Preloader message={loadingMessage} />;
-    }
+  // Show preloader during initial loading (but not if user is already authenticated)
+  if (loading && !isAuthenticated) {
+    console.log('App: Showing preloader');
+    return <Preloader message="Initializing..." />;
+  }
 
+  console.log('App: Deciding what to render - isAuthenticated:', isAuthenticated);
+
+  if (!isAuthenticated) {
+    console.log('App: Rendering LoginScreen');
+    return (
+      <div className="app">
+        <LoginScreen />
+      </div>
+    );
+  }
+
+  console.log('App: Rendering main app');
   return (
     <div className="app">
-      {!isAuthenticated ? (
-        <LoginScreen onLogin={handleLogin} />
-        ) : (
-          <div className="app-container">
-            <header className="app-header">
-            <div className="user-info">User ID: {getUserId()?.slice(0, 8)}...</div>
-              <div className="logo"></div>
-            <div className="app-actions">
-              <button onClick={handleLogout} className="logout-button">
-                Logout
-              </button>
-              {isMaster && <span className="master-badge">Master</span>}
-            </div>
-            </header>
-            <main>
-              <QuadraticVoting />
-            </main>
+      <div className="app-container">
+        <header className="app-header">
+          <div className="user-info">
+            {getUserDisplayName() ? (
+              <span>Ciao, {getUserDisplayName()}</span>
+            ) : (
+              <span>Utente autenticato</span>
+            )}
           </div>
-        )}
+          <div className="logo"></div>
+          <div className="app-actions">
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+            {isMaster && <span className="master-badge">Master</span>}
+          </div>
+        </header>
+        <main>
+          <QuadraticVoting />
+        </main>
+      </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

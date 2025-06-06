@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Debate, Fighter, PASSKEYS } from '../types';
+import { Debate, Fighter } from '../types';
 import { MasterDashboard } from './MasterDashboard';
 import { MatchCreator } from './MatchCreator';
 import { useFirebaseStorage } from '../hooks/useFirebaseStorage';
@@ -14,7 +14,7 @@ interface TemporaryVotes {
 
 export const QuadraticVoting = () => {
   const { uploadImage, uploadJSON, getJSON, isLoading: isStorageLoading, error: storageError } = useFirebaseStorage();
-  const { isMaster, checkCanVote, registerVote } = useAuth();
+  const { isMaster, checkCanVote, registerVote, getUserDisplayName } = useAuth();
   const [debates, setDebates] = useState<Debate[]>([]);
   const [temporaryVotes, setTemporaryVotes] = useState<TemporaryVotes>({});
   const [isCreditsModalVisible, setIsCreditsModalVisible] = useState(false);
@@ -44,7 +44,6 @@ export const QuadraticVoting = () => {
         setDebates([]);
       }, 8000);
       
-      // No longer need IPFS initialization
       console.log('Loading debates from Firebase Database...');
       
       // Set real-time listeners
@@ -63,7 +62,6 @@ export const QuadraticVoting = () => {
           typeof debate.fighter2.name === 'string'
         );
         
-        // Images are already direct URLs from Firebase Storage, no conversion needed
         setDebates(validDebates);
         setIsLoading(false);
       });
@@ -84,15 +82,10 @@ export const QuadraticVoting = () => {
         throw new Error('Only master can update matches');
       }
 
-      // First set global authentication
-      const authData = {
-        passkey: PASSKEYS.MASTER,
-        timestamp: Date.now()
-      };
+      // Set master authentication
+      await FirebaseService.setMasterAuth();
       
-      await set(ref(getDatabase(), '_auth'), authData);
-      
-      // Small pause to ensure _auth is set
+      // Small pause to ensure auth is set
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Save to Firebase (object format)
@@ -103,13 +96,14 @@ export const QuadraticVoting = () => {
       
       await set(ref(getDatabase(), 'debates'), debatesObject);
       
-      // Remove _auth field after saving
-      await set(ref(getDatabase(), '_auth'), null);
+      // Remove auth field after saving
+      await FirebaseService.clearAuth();
       
       console.log('Matches saved successfully on Firebase');
       
     } catch (err) {
       console.error('Error while saving matches:', err);
+      await FirebaseService.clearAuth(); // Ensure auth is cleared even on error
       throw err;
     }
   };
@@ -275,6 +269,11 @@ export const QuadraticVoting = () => {
           <p className="credits">
             Web3 Fighters
           </p>
+          {getUserDisplayName() && (
+            <p className="user-name">
+              {getUserDisplayName()}
+            </p>
+          )}
         </div>
       </div>
 
