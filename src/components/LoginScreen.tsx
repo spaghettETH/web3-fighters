@@ -20,6 +20,9 @@ export const LoginScreen = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState('');
   const [registrationMode, setRegistrationMode] = useState('user'); // 'user' or 'master'
+  const [masterPassword, setMasterPassword] = useState('');
+
+  const MASTER_PASSWORD = 'l4cr01s3tt3';
 
   // Monitor authentication state changes
   useEffect(() => {
@@ -74,6 +77,18 @@ export const LoginScreen = () => {
       return;
     }
 
+    // Controlla la password master se necessario
+    if (registrationMode === 'master') {
+      if (!masterPassword) {
+        setError('Master password is required');
+        return;
+      }
+      if (masterPassword !== MASTER_PASSWORD) {
+        setError('Incorrect master password');
+        return;
+      }
+    }
+
     console.log('LoginScreen: Starting registration flow');
     setIsLoading(true);
     setError('');
@@ -85,6 +100,7 @@ export const LoginScreen = () => {
       if (result.success) {
         setShowRegistration(false);
         setUserDisplayName('');
+        setMasterPassword('');
         setError('');
         setIsLoading(false); // Reset loading after successful registration
       } else {
@@ -185,6 +201,20 @@ export const LoginScreen = () => {
                 </label>
               </div>
             </div>
+
+            {registrationMode === 'master' && (
+              <div className="form-group">
+                <label htmlFor="masterPassword">Master password</label>
+                <input
+                  type="password"
+                  id="masterPassword"
+                  value={masterPassword}
+                  onChange={(e) => setMasterPassword(e.target.value)}
+                  placeholder="Enter master password"
+                  disabled={isLoading}
+                />
+              </div>
+            )}
             
             {error && <div className="error-message">{error}</div>}
             
@@ -192,7 +222,11 @@ export const LoginScreen = () => {
               <button 
                 onClick={handleRegister}
                 className="register-button"
-                disabled={isLoading || !userDisplayName.trim()}
+                disabled={
+                  isLoading || 
+                  !userDisplayName.trim() || 
+                  (registrationMode === 'master' && !masterPassword.trim())
+                }
               >
                 {isLoading ? 'Registering...' : '🔐 Register Passkey'}
               </button>
@@ -202,6 +236,8 @@ export const LoginScreen = () => {
                   setShowRegistration(false);
                   setIsLoading(false);
                   setError('');
+                  setUserDisplayName('');
+                  setMasterPassword('');
                 }}
                 className="cancel-button"
                 disabled={isLoading}
