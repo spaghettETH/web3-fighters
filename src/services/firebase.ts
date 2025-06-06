@@ -54,24 +54,16 @@ export class FirebaseService {
    */
   static async hasDeviceVoted(debateId: number): Promise<boolean> {
     try {
-      // Prima controlla Firebase se disponibile
-      if (database) {
-        const deviceId = getDeviceId();
-        const voteRef = ref(database, `votes/${deviceId}/${debateId}`);
-        const snapshot = await get(voteRef);
-        
-        if (snapshot.exists()) {
-          return true;
-        }
-      }
-      
-      // Fallback: controlla localStorage
       const deviceId = getDeviceId();
+      console.log('Checking if device has voted:', { deviceId, debateId });
+      
+      // Prima controlla localStorage (più affidabile)
       const storedUser = localStorage.getItem('web3fighters_user');
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
           if (userData.id && userData.votedDebates[debateId]) {
+            console.log('Found vote in localStorage');
             return true;
           }
         } catch (error) {
@@ -79,10 +71,28 @@ export class FirebaseService {
         }
       }
       
+      // Poi controlla Firebase se disponibile, ma gestisci gli errori senza bloccare
+      if (database) {
+        try {
+          const voteRef = ref(database, `votes/${deviceId}/${debateId}`);
+          const snapshot = await get(voteRef);
+          
+          if (snapshot.exists()) {
+            console.log('Found vote in Firebase');
+            return true;
+          }
+        } catch (firebaseError) {
+          console.warn('Error checking Firebase votes (will proceed with local check):', firebaseError);
+          // Non bloccare il voto se Firebase ha problemi di lettura
+        }
+      }
+      
+      console.log('No vote found, user can vote');
       return false;
     } catch (error) {
       console.error('Errore nel controllo voto esistente:', error);
-      return false; // In caso di errore, permetti il voto
+      // In caso di errore, permetti il voto (meglio permettere un voto extra che bloccare completamente)
+      return false;
     }
   }
   

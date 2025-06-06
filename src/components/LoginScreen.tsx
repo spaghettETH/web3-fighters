@@ -341,6 +341,17 @@ export const LoginScreen = () => {
               >
                 Reset All
               </button>
+              
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('web3fighters_user');
+                  alert('User data cleared. Refresh the page.');
+                }}
+                className="reset-button"
+                style={{ marginTop: '0.5rem' }}
+              >
+                Clear User Data
+              </button>
             </div>
           )}
         </div>
