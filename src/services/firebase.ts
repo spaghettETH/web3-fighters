@@ -55,15 +55,21 @@ export class FirebaseService {
   static async hasDeviceVoted(debateId: number): Promise<boolean> {
     try {
       const deviceId = getDeviceId();
-      console.log('Checking if device has voted:', { deviceId, debateId });
+      console.log('🔍 Checking if device has voted:', { deviceId, debateId });
       
       // Prima controlla localStorage (più affidabile)
       const storedUser = localStorage.getItem('web3fighters_user');
+      console.log('📱 localStorage data:', storedUser);
+      
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
+          console.log('👤 Parsed user data:', userData);
+          console.log('🗳️ User votedDebates:', userData.votedDebates);
+          
           if (userData.id && userData.votedDebates[debateId]) {
-            console.log('Found vote in localStorage');
+            console.log('❌ Found vote in localStorage for debate:', debateId);
+            console.log('📊 Vote details:', userData.votedDebates[debateId]);
             return true;
           }
         } catch (error) {
@@ -75,19 +81,22 @@ export class FirebaseService {
       if (database) {
         try {
           const voteRef = ref(database, `votes/${deviceId}/${debateId}`);
+          console.log('🔥 Checking Firebase path:', `votes/${deviceId}/${debateId}`);
           const snapshot = await get(voteRef);
           
           if (snapshot.exists()) {
-            console.log('Found vote in Firebase');
+            console.log('❌ Found vote in Firebase:', snapshot.val());
             return true;
+          } else {
+            console.log('✅ No vote found in Firebase');
           }
         } catch (firebaseError) {
-          console.warn('Error checking Firebase votes (will proceed with local check):', firebaseError);
+          console.warn('⚠️ Error checking Firebase votes (will proceed with local check):', firebaseError);
           // Non bloccare il voto se Firebase ha problemi di lettura
         }
       }
       
-      console.log('No vote found, user can vote');
+      console.log('✅ No vote found anywhere, user can vote');
       return false;
     } catch (error) {
       console.error('Errore nel controllo voto esistente:', error);

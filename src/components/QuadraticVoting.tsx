@@ -176,7 +176,13 @@ export const QuadraticVoting = () => {
       }, 1000);
     } catch (err) {
       console.error('Error while sending vote:', err);
-      alert('An error occurred while sending the vote. Retry later.');
+      
+      // Show user-friendly message for already voted error
+      if (err instanceof Error && err.message.includes('già votato')) {
+        alert('This device has already voted for this match. You cannot vote twice for the same match.');
+      } else {
+        alert('An error occurred while sending the vote. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
