@@ -20,11 +20,11 @@ Sistema di votazione real-time per eventi di dibattito con prevenzione anti-dopp
 ## 🚀 Setup Veloce
 
 ### 1. **Clone & Install**
-```bash
+   ```bash
 git clone https://github.com/your-repo/web3-fighters
 cd web3-fighters
-npm install
-```
+   npm install
+   ```
 
 ### 2. **Configurazione Firebase**
 
@@ -50,9 +50,9 @@ firebase deploy --only database
 ```
 
 ### 4. **Avvia App**
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 ## 📱 **Come Funziona**
 

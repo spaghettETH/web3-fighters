@@ -40,17 +40,17 @@ export const MatchCreator = ({ onCreateMatch }: MatchCreatorProps) => {
       // Upload directly to Firebase Storage
       const imageUrl = await uploadImage(file);
       
-      if (fighter === 'fighter1') {
+        if (fighter === 'fighter1') {
         setFighter1(prev => ({ 
           ...prev, 
           imageUrl: imageUrl // Direct URL from Firebase Storage
         }));
-      } else {
+        } else {
         setFighter2(prev => ({ 
           ...prev, 
           imageUrl: imageUrl
         }));
-      }
+        }
     } catch (err) {
       console.error('Upload error:', err);
       alert('Image upload error. Retry.');
