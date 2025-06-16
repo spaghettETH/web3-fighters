@@ -98,7 +98,7 @@ function AppContent() {
         <header className="app-header">
           <div className="user-info">
             {getUserDisplayName() ? (
-              <span>Ciao, {getUserDisplayName()}</span>
+              <span>Bonjour, {getUserDisplayName()}</span>
             ) : (
               <span>Utente autenticato</span>
             )}
