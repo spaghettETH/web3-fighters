@@ -6,8 +6,9 @@ import Preloader from './components/Preloader';
 import './App.css';
 
 function AppContent() {
-  const { isAuthenticated, logout, isMaster, getUserDisplayName } = useAuth();
+  const { isAuthenticated, logout, isMaster, getUserDisplayName, getUserId } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   // Log every render to see current state
   useEffect(() => {
@@ -30,8 +31,26 @@ function AppContent() {
     if (isAuthenticated) {
       console.log('App: User authenticated, stopping preloader');
       setLoading(false);
+      
+      // Check if this is the first time login for this user
+      const userId = getUserId();
+      if (userId) {
+        const hasSeenWelcome = localStorage.getItem(`web3fighters_welcome_${userId}`);
+        if (!hasSeenWelcome) {
+          setShowWelcomeModal(true);
+        }
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, getUserId]);
+
+  const handleWelcomeClose = () => {
+    const userId = getUserId();
+    if (userId) {
+      // Mark that user has seen the welcome message
+      localStorage.setItem(`web3fighters_welcome_${userId}`, 'true');
+    }
+    setShowWelcomeModal(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -57,6 +76,24 @@ function AppContent() {
   console.log('App: Rendering main app');
   return (
     <div className="app">
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <div className="welcome-modal-overlay">
+          <div className="welcome-modal">
+            <div className="welcome-content">
+              <h2>🥊 BlockFighters begins!</h2>
+              <p>One vote per match. Choose well — it's final!</p>
+              <button 
+                onClick={handleWelcomeClose}
+                className="welcome-enter-button"
+              >
+                ENTER
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="app-container">
         <header className="app-header">
           <div className="user-info">

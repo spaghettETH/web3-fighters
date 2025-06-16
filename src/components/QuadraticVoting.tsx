@@ -369,7 +369,7 @@ export const QuadraticVoting = () => {
               onClick={() => handleConfirmVote(debate.id)}
             >
               {debate.status === 'PENDING' && 'Pending'}
-              {debate.status === 'VOTE' && (hasVoted(debate.id) ? 'You have already voted' : 'Confirm vote')}
+              {debate.status === 'VOTE' && (hasVoted(debate.id) ? 'Already voted' : 'Confirm vote')}
               {debate.status === 'CLOSED' && 'Closed'}
             </button>
           </div>

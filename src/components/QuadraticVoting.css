@@ -273,7 +273,7 @@ body {
 .fighter h4 {
   margin: 0;
   font-size: 1rem;
-  color: #ffd700;
+  color: #fff !important;
   text-align: center;
   word-break: break-word;
 }
@@ -281,8 +281,8 @@ body {
 .fighter p {
   margin: 0;
   font-size: 0.9rem;
-  color: #fff;
-  opacity: 0.8;
+  color: #ffd700 !important;
+  opacity: 1 !important;
   text-align: center;
 }
 
@@ -345,8 +345,8 @@ button.vote-button:disabled {
 }
 
 .debate-title {
-  color: #ffd700;
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+  color: #fff !important;
+  text-shadow: 0 0 5px rgba(255,255,255,0.3) !important;
   margin: 0.5rem 0 2rem;
   font-size: 1.3rem;
   text-align: center;

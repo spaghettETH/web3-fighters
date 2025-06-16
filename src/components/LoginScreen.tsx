@@ -295,16 +295,18 @@ export const LoginScreen = () => {
             <p className="no-passkeys">No passkeys registered</p>
           )}
           
-          <button 
-            onClick={() => {
-              setShowRegistration(true);
-              setError('');
-            }}
-            className="register-button secondary"
-            disabled={isLoading}
-          >
-            ➕ Register New Passkey
-          </button>
+          {!hasRegisteredPasskeys && (
+            <button 
+              onClick={() => {
+                setShowRegistration(true);
+                setError('');
+              }}
+              className="register-button secondary"
+              disabled={isLoading}
+            >
+              ➕ Register New Passkey
+            </button>
+          )}
         </div>
 
         {/* Debug panel for development */}
